@@ -146,7 +146,7 @@ const columns = line => line.reduce((n, s) => { for (const ch of s.text) n = ch 
 /** Font size, visible lines and canvas height, so the widest line fits and nothing is cut without a mark. */
 export function layout(lines, command) {
     const widest = Math.max(command.length + 2, ...lines.map(columns));
-    // ponytail: assumes a 0.6em advance, which fits common monospace fonts; embed a subset font if viewers' fonts drift (PROPOSAL §4)
+    // ponytail: assumes a 0.6em advance, which fits common monospace fonts; embed a subset font if viewers' fonts drift
     const font = Math.max(11, Math.min(16, Math.floor((2 * 1090) / (0.6 * widest)) / 2));
     const lineH = font * 1.5;
     const shown = fit(lines, Math.floor((MAX_H - FRAME) / lineH) - 1);

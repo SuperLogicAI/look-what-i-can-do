@@ -1,4 +1,4 @@
-// look-what-i-can-do, hosted: GET /<owner>/<repo>.svg renders a public repo's README as an animated hero. PROPOSAL §3.4.
+// look-what-i-can-do, hosted: GET /<owner>/<repo>.svg renders a public repo's README as an animated hero.
 // Runs as a Cloudflare Worker (the default export below) and locally via `node lwicd.mjs serve`. No Node imports: a test keeps it that way.
 // README bytes only ever come from unauthenticated raw.githubusercontent.com fetches, so a private repo can't render even
 // when GITHUB_TOKEN can see it. Camo URLs are public: a private README must never leak through one.

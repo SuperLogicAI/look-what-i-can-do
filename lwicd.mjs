@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// look-what-i-can-do: README in, animated hero out. See PROPOSAL.md.
+// look-what-i-can-do: README in, animated hero out.
 // Writes an animated SVG (the primary output) or, with --gif, a GIF export of the same SVG.
 // Replay (default) animates the command and example output the README already shows, and runs nothing from the repo.
 // --live runs the command in a pseudo-terminal and keeps its real output and colors.
@@ -19,7 +19,7 @@ const FPS = 15;
 
 /** GIF export: seeks the SVG's animations frame by frame in headless Chromium, then encodes with ffmpeg's palette filters. */
 export async function renderGif({ svg, seconds, W, H }, out) {
-    // ponytail: Chromium + ffmpeg for the export only; Phase 3 swaps in resvg-wasm and a JS GIF encoder (PROPOSAL §6)
+    // ponytail: Chromium + ffmpeg for the export only; upgrade to resvg-wasm and a JS GIF encoder to drop both
     let chromium;
     // Optional, so `npx look-what-i-can-do` stays a 17 KB download for everyone who only wants SVG.
     try { ({ chromium } = await import('playwright-core')); } catch {
