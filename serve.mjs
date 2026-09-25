@@ -146,5 +146,8 @@ export function createHandler({ fetch = globalThis.fetch, token = globalThis.pro
 }
 
 // Cloudflare Worker entry. GITHUB_TOKEN, if set, is a Worker secret with public-repo read access only: it just raises the lookup limit.
+// Browsers asking for / get the landing page (site/index.html, a static asset); curl and friends keep the plain-text usage.
 let worker;
-export default { fetch: (request, env = {}) => (worker ??= createHandler({ token: env.GITHUB_TOKEN }))(request) };
+const wantsPage = request => new URL(request.url).pathname === '/' && request.headers.get('accept')?.includes('text/html');
+export default { fetch: (request, env = {}) => env.ASSETS && wantsPage(request) ? env.ASSETS.fetch(request)
+    : (worker ??= createHandler({ token: env.GITHUB_TOKEN }))(request) };

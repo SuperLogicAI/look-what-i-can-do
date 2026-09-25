@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>look-what-i-can-do</title>
+<meta name="description" content="Your README, as an animated hero. Point an image at lookwhaticando.dev/owner/repo.svg: it types your run command and plays its output. No install, no build, no commit.">
+<meta property="og:title" content="look-what-i-can-do 🤸">
+<meta property="og:description" content="Your README, as an animated hero. One URL.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤸</text></svg>">
+<style>
+:root {
+  --bg: #0b0f14; --panel: #11161d; --line: #232b35; --text: #e6edf3; --muted: #8b98a5;
+  --green: #7ee787; --blue: #79c0ff; --purple: #d2a8ff; --orange: #ffa657; --pink: #ff9bce;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.6 var(--sans); }
+a { color: var(--blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { font: 0.9em var(--mono); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 0.1em 0.4em; white-space: nowrap; }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+
+header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; gap: 16px; }
+.mark { font: 700 18px var(--mono); color: var(--text); }
+.mark span { background: linear-gradient(90deg, var(--green), var(--blue), var(--purple), var(--pink)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+nav { display: flex; gap: 20px; font-size: 15px; }
+nav a { color: var(--muted); }
+
+.hero { text-align: center; padding: 48px 0 24px; }
+h1 { font-size: clamp(36px, 7vw, 68px); line-height: 1.05; letter-spacing: -0.03em; margin: 0 0 20px; font-weight: 800; }
+h1 em { font-style: normal; background: linear-gradient(90deg, var(--green), var(--blue) 45%, var(--purple) 75%, var(--pink)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.lede { color: var(--muted); font-size: clamp(17px, 2.4vw, 21px); max-width: 640px; margin: 0 auto 36px; }
+.lede b { color: var(--text); font-weight: 600; }
+.demo { display: block; width: 100%; height: auto; aspect-ratio: 2 / 1; border-radius: 14px; box-shadow: 0 30px 80px -20px rgba(121, 192, 255, 0.18); }
+
+section { padding: 56px 0; }
+h2 { font-size: clamp(26px, 4vw, 36px); letter-spacing: -0.02em; margin: 0 0 8px; }
+.sub { color: var(--muted); margin: 0 0 28px; }
+
+.try { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: clamp(20px, 4vw, 36px); }
+form { display: flex; gap: 10px; flex-wrap: wrap; }
+.field { flex: 1 1 280px; display: flex; align-items: center; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; font: 16px var(--mono); }
+.field:focus-within { border-color: var(--blue); }
+.field span { color: var(--muted); padding-left: 14px; white-space: nowrap; }
+input { flex: 1; min-width: 0; background: none; border: 0; outline: 0; color: var(--text); font: inherit; padding: 14px 14px 14px 2px; }
+button { font: 600 16px var(--sans); border: 0; border-radius: 10px; padding: 14px 22px; cursor: pointer; color: var(--bg); background: var(--green); }
+button:hover { filter: brightness(1.1); }
+button.ghost { background: none; color: var(--text); border: 1px solid var(--line); padding: 8px 14px; font-size: 14px; }
+.hint { color: var(--muted); font-size: 14px; margin: 10px 0 0; min-height: 1.4em; }
+.hint.bad { color: var(--orange); }
+.out { margin-top: 24px; }
+.out[hidden] { display: none; }
+.out img { display: block; width: 100%; height: auto; aspect-ratio: 2 / 1; border-radius: 12px; background: var(--bg); }
+.snippet { margin-top: 16px; display: flex; gap: 10px; align-items: flex-start; }
+pre { flex: 1; margin: 0; overflow-x: auto; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 var(--mono); color: var(--text); }
+
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; counter-reset: step; }
+.step { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 24px; }
+.step::before { counter-increment: step; content: counter(step); display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; font: 700 15px var(--mono); color: var(--bg); margin-bottom: 14px; }
+.step:nth-child(1)::before { background: var(--green); }
+.step:nth-child(2)::before { background: var(--blue); }
+.step:nth-child(3)::before { background: var(--purple); }
+.step h3 { margin: 0 0 6px; font-size: 19px; }
+.step p { margin: 0; color: var(--muted); font-size: 15px; }
+.step pre { margin-top: 14px; font-size: 13px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 28px 32px; }
+.facts h3 { margin: 0 0 4px; font-size: 16px; }
+.facts h3::before { content: "▸ "; color: var(--pink); }
+.facts p { margin: 0; color: var(--muted); font-size: 15px; }
+
+footer { border-top: 1px solid var(--line); margin-top: 32px; padding: 28px 0 40px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; color: var(--muted); font-size: 14px; }
+footer a { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="mark" href="/">look-what-i-can-do <span>🤸</span></a>
+    <nav>
+      <a href="https://github.com/SuperLogicAI/look-what-i-can-do">GitHub</a>
+      <a href="https://www.npmjs.com/package/look-what-i-can-do">npm</a>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <h1>Your README,<br><em>as an animated hero.</em></h1>
+    <p class="lede">One image URL types your run command and plays its output, right at the top of your README. <b>No install. No build. No commit.</b></p>
+    <img class="demo" src="/SuperLogicAI/look-what-i-can-do.svg" width="1280" height="640" alt="look-what-i-can-do's own README, animated: the command typed out, then its output">
+  </div>
+
+  <section id="try">
+    <div class="try">
+      <h2>Try it on your repo</h2>
+      <p class="sub">Any public GitHub repo. What you see is what your README will show.</p>
+      <form id="form">
+        <label class="field"><span>github.com/</span><input id="repo" name="repo" placeholder="owner/repo" autocomplete="off" autocapitalize="off" spellcheck="false" required></label>
+        <button>Render</button>
+      </form>
+      <p class="hint" id="hint">Paste a repo or its GitHub link.</p>
+      <div class="out" id="out" hidden>
+        <img id="preview" width="1280" height="640" alt="">
+        <div class="snippet">
+          <pre id="code"></pre>
+          <button class="ghost" id="copy" type="button">Copy</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>How it works</h2>
+    <p class="sub">It reads the README GitHub already shows. Nothing runs from your repo.</p>
+    <div class="steps">
+      <div class="step">
+        <h3>Show a real run</h3>
+        <p>A <code>console</code> block with a <code>$</code> command and its output. Add <code>hero</code> to pick which one.</p>
+        <pre>```console hero
+$ npx your-tool
+✓ all 9 checks passed
+```</pre>
+      </div>
+      <div class="step">
+        <h3>Paste one image</h3>
+        <p>At the top of the README, with your owner and repo.</p>
+        <pre>&lt;img src="https://lookwhaticando.dev/
+  owner/repo.svg" width="800"&gt;</pre>
+      </div>
+      <div class="step">
+        <h3>Push</h3>
+        <p>That's it. Edit the README later and the hero follows within about 7 minutes.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="facts">
+      <div><h3>A few KB of SVG</h3><p>Sharp at any size, animated without a GIF's weight or blur.</p></div>
+      <div><h3>No cap</h3><p>It shows your README's own text, as written. Nothing added, nothing invented.</p></div>
+      <div><h3>Private stays private</h3><p>Only public README files are read. Private repos are never served.</p></div>
+      <div><h3>Never a broken image</h3><p>If something's off, the image itself says what and how to fix it.</p></div>
+      <div><h3>Real colors, or a GIF</h3><p><code>npx look-what-i-can-do --live</code> runs the command for real. <code>--gif</code> for X and LinkedIn.</p></div>
+      <div><h3>Monorepos and branches</h3><p><code>?path=</code> picks another README, <code>?ref=</code> a branch or tag, <code>?highlight=</code> a line.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <span>MIT · <a href="https://github.com/SuperLogicAI/look-what-i-can-do">Source</a></span>
+    <span>Made in Hawaiʻi by <a href="https://superlogicai.com">Super Logic AI</a></span>
+  </footer>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+// Same rules as serve.mjs: a GitHub owner, then a repo name. A pasted github.com link works too.
+const REPO = /^([A-Za-z0-9][A-Za-z0-9-]{0,38})\/([\w.-]{1,100})$/;
+const parse = s => s.trim().replace(/^(https?:\/\/)?(www\.)?github\.com\//i, '').replace(/(\.git)?\/*$/, '').match(REPO);
+
+$('form').addEventListener('submit', e => {
+  e.preventDefault();
+  const m = parse($('repo').value);
+  if (!m || m[2] === '.' || m[2] === '..') {
+    $('hint').textContent = 'That doesn\'t look like owner/repo.';
+    $('hint').className = 'hint bad';
+    return;
+  }
+  $('repo').value = `${m[1]}/${m[2]}`;
+  const [, owner, repo] = m, src = `${location.origin}/${owner}/${repo}.svg`;
+  $('hint').textContent = 'Rendering…';
+  $('hint').className = 'hint';
+  $('preview').onload = () => { $('hint').textContent = `${owner}/${repo}, live from GitHub.`; };
+  $('preview').alt = `${repo}, animated`;
+  $('preview').src = src;
+  $('code').textContent = `<p align="center"><img src="${src}" width="800" alt="${repo}"></p>`;
+  $('copy').textContent = 'Copy';
+  $('out').hidden = false;
+});
+
+$('copy').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText($('code').textContent); $('copy').textContent = 'Copied'; }
+  catch { getSelection().selectAllChildren($('code')); }
+});
+</script>
+</body>
+</html>

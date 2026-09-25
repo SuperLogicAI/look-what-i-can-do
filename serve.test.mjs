@@ -135,6 +135,15 @@ test('the hosted code is Worker-safe: no Node imports, and the default export an
     assert.match(await r.text(), /Embed: <img src="https:\/\/lookwhaticando\.dev\/<owner>\/<repo>\.svg"/);
 });
 
+test('/ gives browsers the landing page from assets and everyone else the plain-text usage', async () => {
+    const ASSETS = { fetch: () => new Response('<!doctype html>page', { headers: { 'content-type': 'text/html' } }) };
+    const html = { accept: 'text/html,application/xhtml+xml' };
+    assert.match(await (await worker.fetch(req('/', html), { ASSETS })).text(), /^<!doctype html>page/);
+    assert.match(await (await worker.fetch(req('/'), { ASSETS })).text(), /^look-what-i-can-do /);
+    assert.match(await (await worker.fetch(req('/', html), {})).text(), /^look-what-i-can-do /, 'no assets: plain text');
+    assert.match(await (await worker.fetch(req('/not-a-repo.svg', html), { ASSETS })).headers.get('content-type'), /^image\/svg/);
+});
+
 test('?highlight and the README comment both highlight; a highlight changes the ETag', async () => {
     const files = { 'acme/tool/README.md': readme(), 'acme/lit/README.md': `<!-- look-what-i-can-do highlight="9 checks" -->\n${readme()}` };
     const handle = createHandler({ fetch: fakeGitHub(files).fetch, now: clock().now });

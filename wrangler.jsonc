@@ -3,5 +3,7 @@
 	"name": "look-what-i-can-do",
 	"main": "serve.mjs",
 	"compatibility_date": "2026-09-24",
+	// The landing page. Only / runs the Worker first, so it can send curl the plain-text usage instead.
+	"assets": { "directory": "./site", "binding": "ASSETS", "run_worker_first": ["/"] },
 	"routes": [{ "pattern": "lookwhaticando.dev", "custom_domain": true }]
 }
