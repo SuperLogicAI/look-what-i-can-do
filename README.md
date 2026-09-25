@@ -8,13 +8,15 @@
 
 It reads your README's title, tagline, run command and example output, types the command, plays the output, and writes an animated SVG you paste at the top: a few KB, full color, sharp at any size. `--gif` exports the same hero as a GIF for places that don't take SVG, like X, LinkedIn and Product Hunt. The image above is this README, made by the command below. Where it's headed, a hosted URL with zero setup, is in [the proposal](PROPOSAL.md).
 
-```console
-$ node lwicd.mjs -o docs/hero.svg --highlight rendered
+<!-- look-what-i-can-do highlight="rendered" -->
+```console hero
+$ node lwicd.mjs -o docs/hero.svg
 🤸 look what I can do!
 
   read      README.md: look-what-i-can-do 🤸
-  replayed  11 lines of example output, as written (READMEs have no colors; --live runs it)
-  rendered  docs/hero.svg · 1280×640 · 8.4 s loop · 9.5 KB · in 0.0 s
+  block     the one marked hero
+  replayed  12 lines of example output, as written (READMEs have no colors; --live runs it)
+  rendered  docs/hero.svg · 1280×640 · 8.5 s loop · 7.6 KB · in 0.0 s
 
 Paste at the top of your README:
 
@@ -29,6 +31,7 @@ Paste at the top of your README:
 node lwicd.mjs path/to/README.md           # animated SVG: needs Node and nothing else
 node lwicd.mjs path/to/README.md --live    # run the command in a terminal: real output, real colors
 node lwicd.mjs path/to/README.md --gif     # GIF export: npm install first; needs Chrome or Chromium, and ffmpeg
+node serve.mjs                             # the hosted URL, locally: http://localhost:8787/<owner>/<repo>.svg
 npm test                                   # fixture tests, synthetic data only
 ```
 
@@ -39,6 +42,25 @@ npm test                                   # fixture tests, synthetic data only
 | `--live` | Run the command in a pseudo-terminal and show its real output and colors |
 | `--command <cmd>` | The command to show, and with `--live` to run (default: the README's) |
 | `--highlight <text>` | Sweep a highlight over the first output line that contains this text |
+
+## Tell it what to animate
+
+Add `hero` after the language on the fence of the block you want: ```` ```console hero ````. GitHub ignores words after the language, so nobody sees the marker, and the marked block always wins. A console block holds `$ command` and its output. A marked block without a `$` line is the output alone, and the command comes from your shell blocks. Options go in an HTML comment, which GitHub doesn't show either:
+
+```html
+<!-- look-what-i-can-do highlight="unbacked" -->
+```
+
+Without a marker it guesses: the first `console` block with a `$ command` and output, else the first run command (`npx`, `npm`, `pip`, `brew`, `cargo`, `go`, `docker`, `node`, `python`, …) in a shell block with the first untagged or `text` block as its output. The CLI tells you which one it used. The title is the first `#` heading. The tagline is the first paragraph after it that isn't HTML, a badge or a table, cut to its first sentence past 100 characters.
+
+## Hosted URL (built, not deployed yet)
+
+`serve.mjs` serves `/<owner>/<repo>.svg` for any public repo: the README GitHub shows on the repo page, replayed as written. `?path=` picks another README (monorepos), `?ref=` a branch or tag, `?highlight=` a line.
+
+- **Fresh:** every response is `Cache-Control: no-cache` with an ETag, so GitHub's image proxy checks back on each view and gets a `304` from memory. GitHub is asked at most once a minute per repo, so README edits show up within about 6 minutes.
+- **Finds the right README:** one API call per repo per day. If that's rate-limited, it checks `.github/`, the root, then `docs/`, in GitHub's order.
+- **Private repos are never served:** README bytes only come from unauthenticated raw fetches, and image URLs are public.
+- **Errors are images, not broken icons:** a `200` with an SVG that says what's wrong and how to fix it, plus an `X-LWICD-Error` header.
 
 ## Why SVG
 
@@ -54,11 +76,6 @@ The image never shows output your tool can't produce.
 - The accent color touches the prompt and the highlight, never your output.
 
 [examples/agent-nocap.svg](examples/agent-nocap.svg) is a replay of [agent-nocap](https://github.com/SuperLogicAI/agent-nocap)'s README.
-
-## How it reads a README
-
-- **Title:** the first `#` heading. **Tagline:** the first paragraph after it that isn't HTML, a badge or a table, cut to its first sentence when it runs past 100 characters.
-- **Command and output:** a `console` block's `$ command` and the lines after it. Otherwise the first run command (`npx`, `npm`, `pip`, `brew`, `cargo`, `go`, `docker`, `node`, `python`, …) in a shell block, with the first untagged or `text` block as its output.
 
 ## Known limits
 

@@ -2,72 +2,54 @@
 <style>
 text{font:15.5px ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace;fill:#e6edf3;white-space:pre}
 .t{font:800 56px -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;letter-spacing:-1px}.s{font:400 23px -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;fill:#8b98a5}
-.a{animation:8.45s ease-out infinite both}.g{transform-box:fill-box;transform-origin:left center}
+.a{animation:8.55s ease-out infinite both}.g{transform-box:fill-box;transform-origin:left center}
 @media (prefers-reduced-motion:reduce){.a{animation:none}.c{display:none}}
-@keyframes k0{0%,92.90%{opacity:1}100%{opacity:0}}
-@keyframes k1{0%,0.00%{opacity:0;transform:translateY(14px)}7.10%,100%{opacity:1;transform:none}}
-@keyframes k2{0%,4.14%{opacity:0;transform:translateY(14px)}11.24%,100%{opacity:1;transform:none}}
-@keyframes k3{0%,8.28%{opacity:0;transform:translateY(14px)}14.20%,100%{opacity:1;transform:none}}
-@keyframes k4{0%,14.20%{opacity:0}14.32%,100%{opacity:1}}
-@keyframes k5{0%,14.47%{opacity:0}14.59%,100%{opacity:1}}
-@keyframes k6{0%,14.75%{opacity:0}14.87%,100%{opacity:1}}
-@keyframes k7{0%,15.02%{opacity:0}15.14%,100%{opacity:1}}
-@keyframes k8{0%,15.57%{opacity:0}15.69%,100%{opacity:1}}
-@keyframes k9{0%,15.84%{opacity:0}15.96%,100%{opacity:1}}
-@keyframes k10{0%,16.11%{opacity:0}16.23%,100%{opacity:1}}
-@keyframes k11{0%,16.39%{opacity:0}16.50%,100%{opacity:1}}
-@keyframes k12{0%,16.66%{opacity:0}16.78%,100%{opacity:1}}
-@keyframes k13{0%,16.93%{opacity:0}17.05%,100%{opacity:1}}
-@keyframes k14{0%,17.21%{opacity:0}17.32%,100%{opacity:1}}
-@keyframes k15{0%,17.48%{opacity:0}17.60%,100%{opacity:1}}
-@keyframes k16{0%,17.75%{opacity:0}17.87%,100%{opacity:1}}
-@keyframes k17{0%,18.30%{opacity:0}18.42%,100%{opacity:1}}
-@keyframes k18{0%,18.57%{opacity:0}18.69%,100%{opacity:1}}
-@keyframes k19{0%,19.12%{opacity:0}19.24%,100%{opacity:1}}
-@keyframes k20{0%,19.39%{opacity:0}19.51%,100%{opacity:1}}
-@keyframes k21{0%,19.66%{opacity:0}19.78%,100%{opacity:1}}
-@keyframes k22{0%,19.94%{opacity:0}20.05%,100%{opacity:1}}
-@keyframes k23{0%,20.21%{opacity:0}20.33%,100%{opacity:1}}
-@keyframes k24{0%,20.48%{opacity:0}20.60%,100%{opacity:1}}
-@keyframes k25{0%,20.76%{opacity:0}20.87%,100%{opacity:1}}
-@keyframes k26{0%,21.03%{opacity:0}21.15%,100%{opacity:1}}
-@keyframes k27{0%,21.30%{opacity:0}21.42%,100%{opacity:1}}
-@keyframes k28{0%,21.57%{opacity:0}21.69%,100%{opacity:1}}
-@keyframes k29{0%,21.85%{opacity:0}21.97%,100%{opacity:1}}
-@keyframes k30{0%,22.12%{opacity:0}22.24%,100%{opacity:1}}
-@keyframes k31{0%,22.39%{opacity:0}22.51%,100%{opacity:1}}
-@keyframes k32{0%,22.94%{opacity:0}23.06%,100%{opacity:1}}
-@keyframes k33{0%,23.21%{opacity:0}23.33%,100%{opacity:1}}
-@keyframes k34{0%,23.49%{opacity:0}23.60%,100%{opacity:1}}
-@keyframes k35{0%,23.76%{opacity:0}23.88%,100%{opacity:1}}
-@keyframes k36{0%,24.03%{opacity:0}24.15%,100%{opacity:1}}
-@keyframes k37{0%,24.31%{opacity:0}24.42%,100%{opacity:1}}
-@keyframes k38{0%,24.58%{opacity:0}24.70%,100%{opacity:1}}
-@keyframes k39{0%,24.85%{opacity:0}24.97%,100%{opacity:1}}
-@keyframes k40{0%,25.13%{opacity:0}25.24%,100%{opacity:1}}
-@keyframes k41{0%,25.40%{opacity:0}25.52%,100%{opacity:1}}
-@keyframes k42{0%,25.67%{opacity:0}25.79%,100%{opacity:1}}
-@keyframes k43{0%,26.22%{opacity:0}26.34%,100%{opacity:1}}
-@keyframes k44{0%,26.49%{opacity:0}26.61%,100%{opacity:1}}
-@keyframes k45{0%,26.76%{opacity:0}26.88%,100%{opacity:1}}
-@keyframes k46{0%,27.04%{opacity:0}27.16%,100%{opacity:1}}
-@keyframes k47{0%,27.31%{opacity:0}27.43%,100%{opacity:1}}
-@keyframes k48{0%,27.58%{opacity:0}27.70%,100%{opacity:1}}
-@keyframes k49{0%,27.86%{opacity:0}27.97%,100%{opacity:1}}
-@keyframes k50{0%,28.13%{opacity:0}28.25%,100%{opacity:1}}
-@keyframes k51{0%,28.40%{opacity:0}28.52%,34.32%{opacity:1}34.44%,100%{opacity:0}}
-@keyframes k52{0%,34.32%{opacity:0;transform:translateY(4px)}37.28%,100%{opacity:1;transform:none}}
-@keyframes k53{0%,35.50%{opacity:0;transform:translateY(4px)}38.46%,100%{opacity:1;transform:none}}
-@keyframes k54{0%,36.69%{opacity:0;transform:translateY(4px)}39.64%,100%{opacity:1;transform:none}}
-@keyframes k55{0%,37.87%{opacity:0;transform:translateY(4px)}40.83%,100%{opacity:1;transform:none}}
-@keyframes k56{0%,51.48%{transform:scaleX(0)}56.80%,100%{transform:scaleX(1)}}
-@keyframes k57{0%,39.05%{opacity:0;transform:translateY(4px)}42.01%,100%{opacity:1;transform:none}}
-@keyframes k58{0%,40.24%{opacity:0;transform:translateY(4px)}43.20%,100%{opacity:1;transform:none}}
-@keyframes k59{0%,41.42%{opacity:0;transform:translateY(4px)}44.38%,100%{opacity:1;transform:none}}
-@keyframes k60{0%,42.60%{opacity:0;transform:translateY(4px)}45.56%,100%{opacity:1;transform:none}}
-@keyframes k61{0%,43.79%{opacity:0;transform:translateY(4px)}46.75%,100%{opacity:1;transform:none}}
-@keyframes k62{0%,44.97%{opacity:0;transform:translateY(4px)}47.93%,100%{opacity:1;transform:none}}
-@keyframes k63{0%,46.15%{opacity:0;transform:translateY(4px)}49.11%,100%{opacity:1;transform:none}}
+@keyframes k0{0%,92.98%{opacity:1}100%{opacity:0}}
+@keyframes k1{0%,0.00%{opacity:0;transform:translateY(14px)}7.02%,100%{opacity:1;transform:none}}
+@keyframes k2{0%,4.09%{opacity:0;transform:translateY(14px)}11.11%,100%{opacity:1;transform:none}}
+@keyframes k3{0%,8.19%{opacity:0;transform:translateY(14px)}14.04%,100%{opacity:1;transform:none}}
+@keyframes k4{0%,14.04%{opacity:0}14.15%,100%{opacity:1}}
+@keyframes k5{0%,14.49%{opacity:0}14.60%,100%{opacity:1}}
+@keyframes k6{0%,14.94%{opacity:0}15.06%,100%{opacity:1}}
+@keyframes k7{0%,15.39%{opacity:0}15.51%,100%{opacity:1}}
+@keyframes k8{0%,16.30%{opacity:0}16.42%,100%{opacity:1}}
+@keyframes k9{0%,16.75%{opacity:0}16.87%,100%{opacity:1}}
+@keyframes k10{0%,17.20%{opacity:0}17.32%,100%{opacity:1}}
+@keyframes k11{0%,17.66%{opacity:0}17.77%,100%{opacity:1}}
+@keyframes k12{0%,18.11%{opacity:0}18.23%,100%{opacity:1}}
+@keyframes k13{0%,18.56%{opacity:0}18.68%,100%{opacity:1}}
+@keyframes k14{0%,19.02%{opacity:0}19.13%,100%{opacity:1}}
+@keyframes k15{0%,19.47%{opacity:0}19.58%,100%{opacity:1}}
+@keyframes k16{0%,19.92%{opacity:0}20.04%,100%{opacity:1}}
+@keyframes k17{0%,20.83%{opacity:0}20.94%,100%{opacity:1}}
+@keyframes k18{0%,21.28%{opacity:0}21.40%,100%{opacity:1}}
+@keyframes k19{0%,22.18%{opacity:0}22.30%,100%{opacity:1}}
+@keyframes k20{0%,22.64%{opacity:0}22.75%,100%{opacity:1}}
+@keyframes k21{0%,23.09%{opacity:0}23.21%,100%{opacity:1}}
+@keyframes k22{0%,23.54%{opacity:0}23.66%,100%{opacity:1}}
+@keyframes k23{0%,24.00%{opacity:0}24.11%,100%{opacity:1}}
+@keyframes k24{0%,24.45%{opacity:0}24.57%,100%{opacity:1}}
+@keyframes k25{0%,24.90%{opacity:0}25.02%,100%{opacity:1}}
+@keyframes k26{0%,25.35%{opacity:0}25.47%,100%{opacity:1}}
+@keyframes k27{0%,25.81%{opacity:0}25.92%,100%{opacity:1}}
+@keyframes k28{0%,26.26%{opacity:0}26.38%,100%{opacity:1}}
+@keyframes k29{0%,26.71%{opacity:0}26.83%,100%{opacity:1}}
+@keyframes k30{0%,27.16%{opacity:0}27.28%,100%{opacity:1}}
+@keyframes k31{0%,27.62%{opacity:0}27.73%,100%{opacity:1}}
+@keyframes k32{0%,28.07%{opacity:0}28.19%,33.92%{opacity:1}34.04%,100%{opacity:0}}
+@keyframes k33{0%,33.92%{opacity:0;transform:translateY(4px)}36.84%,100%{opacity:1;transform:none}}
+@keyframes k34{0%,35.09%{opacity:0;transform:translateY(4px)}38.01%,100%{opacity:1;transform:none}}
+@keyframes k35{0%,36.26%{opacity:0;transform:translateY(4px)}39.18%,100%{opacity:1;transform:none}}
+@keyframes k36{0%,37.43%{opacity:0;transform:translateY(4px)}40.35%,100%{opacity:1;transform:none}}
+@keyframes k37{0%,38.60%{opacity:0;transform:translateY(4px)}41.52%,100%{opacity:1;transform:none}}
+@keyframes k38{0%,52.05%{transform:scaleX(0)}57.31%,100%{transform:scaleX(1)}}
+@keyframes k39{0%,39.77%{opacity:0;transform:translateY(4px)}42.69%,100%{opacity:1;transform:none}}
+@keyframes k40{0%,40.94%{opacity:0;transform:translateY(4px)}43.86%,100%{opacity:1;transform:none}}
+@keyframes k41{0%,42.11%{opacity:0;transform:translateY(4px)}45.03%,100%{opacity:1;transform:none}}
+@keyframes k42{0%,43.27%{opacity:0;transform:translateY(4px)}46.20%,100%{opacity:1;transform:none}}
+@keyframes k43{0%,44.44%{opacity:0;transform:translateY(4px)}47.37%,100%{opacity:1;transform:none}}
+@keyframes k44{0%,45.61%{opacity:0;transform:translateY(4px)}48.54%,100%{opacity:1;transform:none}}
+@keyframes k45{0%,46.78%{opacity:0;transform:translateY(4px)}49.71%,100%{opacity:1;transform:none}}
 </style>
 <rect width="1280" height="640" fill="#0b0f14"/>
 <g class="a" style="animation-name:k0">
@@ -77,18 +59,19 @@ text{font:15.5px ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberatio
 <rect x="72.5" y="167.5" width="1135" height="443" rx="14" fill="#11161d" stroke="#232b35"/>
 <path d="M73 202h1134" stroke="#232b35"/>
 <circle cx="92" cy="185" r="6" fill="#ff5f57"/><circle cx="112" cy="185" r="6" fill="#febc2e"/><circle cx="132" cy="185" r="6" fill="#28c840"/>
-<text x="95" y="233.1"><tspan fill="#56d4dd" font-weight="700">❯</tspan> <tspan class="a" style="animation-name:k4">n</tspan><tspan class="a" style="animation-name:k5">o</tspan><tspan class="a" style="animation-name:k6">d</tspan><tspan class="a" style="animation-name:k7">e</tspan> <tspan class="a" style="animation-name:k8">l</tspan><tspan class="a" style="animation-name:k9">w</tspan><tspan class="a" style="animation-name:k10">i</tspan><tspan class="a" style="animation-name:k11">c</tspan><tspan class="a" style="animation-name:k12">d</tspan><tspan class="a" style="animation-name:k13">.</tspan><tspan class="a" style="animation-name:k14">m</tspan><tspan class="a" style="animation-name:k15">j</tspan><tspan class="a" style="animation-name:k16">s</tspan> <tspan class="a" style="animation-name:k17">-</tspan><tspan class="a" style="animation-name:k18">o</tspan> <tspan class="a" style="animation-name:k19">d</tspan><tspan class="a" style="animation-name:k20">o</tspan><tspan class="a" style="animation-name:k21">c</tspan><tspan class="a" style="animation-name:k22">s</tspan><tspan class="a" style="animation-name:k23">/</tspan><tspan class="a" style="animation-name:k24">h</tspan><tspan class="a" style="animation-name:k25">e</tspan><tspan class="a" style="animation-name:k26">r</tspan><tspan class="a" style="animation-name:k27">o</tspan><tspan class="a" style="animation-name:k28">.</tspan><tspan class="a" style="animation-name:k29">s</tspan><tspan class="a" style="animation-name:k30">v</tspan><tspan class="a" style="animation-name:k31">g</tspan> <tspan class="a" style="animation-name:k32">-</tspan><tspan class="a" style="animation-name:k33">-</tspan><tspan class="a" style="animation-name:k34">h</tspan><tspan class="a" style="animation-name:k35">i</tspan><tspan class="a" style="animation-name:k36">g</tspan><tspan class="a" style="animation-name:k37">h</tspan><tspan class="a" style="animation-name:k38">l</tspan><tspan class="a" style="animation-name:k39">i</tspan><tspan class="a" style="animation-name:k40">g</tspan><tspan class="a" style="animation-name:k41">h</tspan><tspan class="a" style="animation-name:k42">t</tspan> <tspan class="a" style="animation-name:k43">r</tspan><tspan class="a" style="animation-name:k44">e</tspan><tspan class="a" style="animation-name:k45">n</tspan><tspan class="a" style="animation-name:k46">d</tspan><tspan class="a" style="animation-name:k47">e</tspan><tspan class="a" style="animation-name:k48">r</tspan><tspan class="a" style="animation-name:k49">e</tspan><tspan class="a" style="animation-name:k50">d</tspan><tspan class="a c" style="animation-name:k51">█</tspan></text>
-<text x="95" y="256.3" class="a o" style="animation-name:k52">🤸 look what I can do!</text>
-<text x="95" y="279.6" class="a o" style="animation-name:k53"></text>
-<text x="95" y="302.8" class="a o" style="animation-name:k54">  read      README.md: look-what-i-can-do 🤸</text>
-<text x="95" y="326.1" class="a o" style="animation-name:k55">  replayed  11 lines of example output, as written (READMEs have no colors; --live runs it)</text>
-<rect x="87" y="332.3" width="1106" height="23.25" rx="4" fill="#56d4dd" fill-opacity=".22" class="a g" style="animation-name:k56"/><text x="95" y="349.3" class="a o" style="animation-name:k57">  rendered  docs/hero.svg · 1280×640 · 8.4 s loop · 9.5 KB · in 0.0 s</text>
-<text x="95" y="372.6" class="a o" style="animation-name:k58"></text>
-<text x="95" y="395.8" class="a o" style="animation-name:k59">Paste at the top of your README:</text>
-<text x="95" y="419.1" class="a o" style="animation-name:k60"></text>
-<text x="95" y="442.3" class="a o" style="animation-name:k61">&lt;p align=&quot;center&quot;&gt;</text>
-<text x="95" y="465.6" class="a o" style="animation-name:k62">  &lt;img src=&quot;docs/hero.svg&quot; width=&quot;800&quot; alt=&quot;look-what-i-can-do 🤸: Your README, as an animated hero. One command.&quot;&gt;</text>
-<text x="95" y="488.8" class="a o" style="animation-name:k63">&lt;/p&gt;</text>
+<text x="95" y="233.1"><tspan fill="#56d4dd" font-weight="700">❯</tspan> <tspan class="a" style="animation-name:k4">n</tspan><tspan class="a" style="animation-name:k5">o</tspan><tspan class="a" style="animation-name:k6">d</tspan><tspan class="a" style="animation-name:k7">e</tspan> <tspan class="a" style="animation-name:k8">l</tspan><tspan class="a" style="animation-name:k9">w</tspan><tspan class="a" style="animation-name:k10">i</tspan><tspan class="a" style="animation-name:k11">c</tspan><tspan class="a" style="animation-name:k12">d</tspan><tspan class="a" style="animation-name:k13">.</tspan><tspan class="a" style="animation-name:k14">m</tspan><tspan class="a" style="animation-name:k15">j</tspan><tspan class="a" style="animation-name:k16">s</tspan> <tspan class="a" style="animation-name:k17">-</tspan><tspan class="a" style="animation-name:k18">o</tspan> <tspan class="a" style="animation-name:k19">d</tspan><tspan class="a" style="animation-name:k20">o</tspan><tspan class="a" style="animation-name:k21">c</tspan><tspan class="a" style="animation-name:k22">s</tspan><tspan class="a" style="animation-name:k23">/</tspan><tspan class="a" style="animation-name:k24">h</tspan><tspan class="a" style="animation-name:k25">e</tspan><tspan class="a" style="animation-name:k26">r</tspan><tspan class="a" style="animation-name:k27">o</tspan><tspan class="a" style="animation-name:k28">.</tspan><tspan class="a" style="animation-name:k29">s</tspan><tspan class="a" style="animation-name:k30">v</tspan><tspan class="a" style="animation-name:k31">g</tspan><tspan class="a c" style="animation-name:k32">█</tspan></text>
+<text x="95" y="256.3" class="a o" style="animation-name:k33">🤸 look what I can do!</text>
+<text x="95" y="279.6" class="a o" style="animation-name:k34"></text>
+<text x="95" y="302.8" class="a o" style="animation-name:k35">  read      README.md: look-what-i-can-do 🤸</text>
+<text x="95" y="326.1" class="a o" style="animation-name:k36">  block     the one marked hero</text>
+<text x="95" y="349.3" class="a o" style="animation-name:k37">  replayed  12 lines of example output, as written (READMEs have no colors; --live runs it)</text>
+<rect x="87" y="355.5" width="1106" height="23.25" rx="4" fill="#56d4dd" fill-opacity=".22" class="a g" style="animation-name:k38"/><text x="95" y="372.6" class="a o" style="animation-name:k39">  rendered  docs/hero.svg · 1280×640 · 8.5 s loop · 7.6 KB · in 0.0 s</text>
+<text x="95" y="395.8" class="a o" style="animation-name:k40"></text>
+<text x="95" y="419.1" class="a o" style="animation-name:k41">Paste at the top of your README:</text>
+<text x="95" y="442.3" class="a o" style="animation-name:k42"></text>
+<text x="95" y="465.6" class="a o" style="animation-name:k43">&lt;p align=&quot;center&quot;&gt;</text>
+<text x="95" y="488.8" class="a o" style="animation-name:k44">  &lt;img src=&quot;docs/hero.svg&quot; width=&quot;800&quot; alt=&quot;look-what-i-can-do 🤸: Your README, as an animated hero. One command.&quot;&gt;</text>
+<text x="95" y="512.0" class="a o" style="animation-name:k45">&lt;/p&gt;</text>
 </g>
 </g>
 </svg>

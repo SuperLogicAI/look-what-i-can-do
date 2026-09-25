@@ -20,7 +20,29 @@ test('README: title, one-line tagline, run command without its comment, example 
         `${fence}sh`, 'npx demo-tool --fast   # the quick way', fence, '',
         fence, 'Scanned 12 widgets.', '', 'All good.', fence].join('\n');
     assert.deepEqual(readReadme(md), { title: 'demo_tool 🧪', tagline: 'Checks your widgets. Then checks them again.',
-        command: 'npx demo-tool --fast', output: ['Scanned 12 widgets.', '', 'All good.'] });
+        command: 'npx demo-tool --fast', output: ['Scanned 12 widgets.', '', 'All good.'], marked: false, options: {} });
+});
+
+test('README: a block fenced ```console hero wins over earlier blocks; a comment sets the highlight', () => {
+    const md = ['# t', '', `${fence}console`, '$ npx t --help', 'usage: t', fence, '',
+        '<!-- look-what-i-can-do highlight="3 fixed" -->', `${fence}console hero`, '$ npx t', 'scanned 9', '3 fixed', fence].join('\n');
+    const r = readReadme(md);
+    assert.equal(r.marked, true);
+    assert.equal(r.command, 'npx t');
+    assert.deepEqual(r.output, ['scanned 9', '3 fixed']);
+    assert.deepEqual(r.options, { highlight: '3 fixed' });
+});
+
+test('README: an options comment shown inside a code block is documentation, not configuration', () => {
+    const md = ['# t', '', `${fence}html`, '<!-- look-what-i-can-do highlight="example" -->', fence, '', `${fence}console hero`, '$ npx t', 'ok', fence].join('\n');
+    assert.deepEqual(readReadme(md).options, {});
+});
+
+test('README: a marked block with no prompt is the output; the command comes from the shell blocks', () => {
+    const md = ['# t', '', `${fence}sh`, 'npx t', fence, '', `${fence}text hero`, 'all 4 green', fence].join('\n');
+    const r = readReadme(md);
+    assert.equal(r.command, 'npx t');
+    assert.deepEqual(r.output, ['all 4 green']);
 });
 
 test('README: a console block pairs "$ command" with its output, up to the next prompt', () => {
@@ -103,6 +125,11 @@ test('svg: a line too wide even at the smallest font is cut with …, not run of
     assert.match(row, />y{164}…</); // 11px font: 1090px / 6.6px = 165 columns, the last one for …
 });
 
+test('svg: the same README and renderer version always give the same bytes', () => {
+    const make = () => heroSvg({ title: 'agent-nocap 🧢', tagline: 'Was that cap?', command: 'npx agent-nocap', lines: parseAnsi('\x1b[32m179\x1b[0m backed\n\nfooter') }).svg;
+    assert.equal(make(), make());
+});
+
 test('hero: highlight only when asked, and says when it found nothing', () => {
     const plainHero = heroSvg({ title: 't', tagline: '', command: 'npx t', lines: L('ok\nwarn') });
     assert.equal(plainHero.highlighted, false);
@@ -122,6 +149,12 @@ test('cli: writes an SVG with no browser and prints the snippet; refuses other f
     assert.ok(svg.startsWith('<svg xmlns="http://www.w3.org/2000/svg"'));
     assert.match(svg, />done in 1 s</);
     assert.match(r.stdout, /<img src="hero\.svg" width="800" alt="demo: Does a thing\.">/);
+    assert.match(r.stdout, /block {5}guessed\. Mark yours with ```console hero/);
+    writeFileSync(join(dir, 'MARKED.md'), ['# demo', '', '<!-- look-what-i-can-do highlight="done" -->', `${fence}console hero`, '$ npx demo', 'done in 1 s', fence].join('\n'));
+    const m = spawnSync(process.execPath, [cli, 'MARKED.md', '-o', 'marked.svg'], { cwd: dir, encoding: 'utf8' });
+    assert.match(m.stdout, /block {5}the one marked hero/);
+    assert.match(readFileSync(join(dir, 'marked.svg'), 'utf8'), /<rect [^>]*class="a g"/); // the comment's highlight
+
     for (const args of [['--gif', '-o', 'x.svg'], ['-o', 'x.png']]) {
         const bad = spawnSync(process.execPath, [cli, ...args], { cwd: dir, encoding: 'utf8' });
         assert.equal(bad.status, 2, args.join(' '));

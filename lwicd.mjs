@@ -19,27 +19,38 @@ const plain = s => s.replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/\[([^\]]*)\]\
     .replace(/\*\*|__|\*|`/g, '').replace(/^>\s*/gm, '').replace(/\s+/g, ' ').trim();
 const RUN = /^\s*(?:\$\s*)?((?:npx|npm|pnpm|yarn|bunx|pip|pipx|uvx|uv|brew|cargo|go|docker|deno|node|python3?)\b.*)$/;
 
-/** Title, tagline, hero command and example output, as the README states them. */
+// "$ command" and the lines after it, up to the next prompt.
+const prompt = lines => {
+    const i = lines.findIndex(l => l.startsWith('$ '));
+    if (i < 0) return null;
+    const next = lines.findIndex((l, j) => j > i && l.startsWith('$ '));
+    return { command: lines[i].slice(2), output: lines.slice(i + 1, next < 0 ? undefined : next) };
+};
+
+/** Title, tagline, hero command and example output, as the README states them. A block fenced ```console hero wins. */
 export function readReadme(md, fallbackTitle = '') {
-    const blocks = [...md.matchAll(/^```(\w*)[^\n]*\n([\s\S]*?)^```/gm)]
-        .map(m => ({ lang: m[1].toLowerCase(), lines: m[2].replace(/\n$/, '').split('\n') }));
+    const blocks = [...md.matchAll(/^```([^\n]*)\n([\s\S]*?)^```/gm)].map(m => {
+        const [lang = '', ...flags] = m[1].trim().toLowerCase().split(/\s+/); // GitHub ignores words after the language: an invisible marker
+        return { lang, hero: flags.includes('hero'), lines: m[2].replace(/\n$/, '').split('\n') };
+    });
     const prose = md.replace(/^```[\s\S]*?^```/gm, '');
     const at = prose.search(/^#\s/m);
     const title = at >= 0 ? plain(prose.slice(at).match(/^#\s+(.+)$/m)[1]) : fallbackTitle;
     const para = plain((at >= 0 ? prose.slice(at).split('\n').slice(1).join('\n') : prose).split(/\n\s*\n/)
         .map(p => p.trim()).find(p => p && !/^(<|#|\||!\[|\[!\[)/.test(p)) ?? '');
     const tagline = para.length > 100 ? para.match(/^.{20,100}?[.!?](?=\s|$)/)?.[0] ?? para : para; // one line: first sentence(s)
-    let command, output;
-    for (const { lang, lines } of blocks) { // a console block: "$ command" followed by its output
-        const i = lang === 'console' ? lines.findIndex(l => l.startsWith('$ ')) : -1;
-        if (i < 0 || i === lines.length - 1) continue;
-        const next = lines.findIndex((l, j) => j > i && l.startsWith('$ '));
-        command = lines[i].slice(2); output = lines.slice(i + 1, next < 0 ? undefined : next);
-        break;
-    }
-    command ??= blocks.filter(b => ['sh', 'bash', 'shell', 'zsh', ''].includes(b.lang)).flatMap(b => b.lines).map(l => l.match(RUN)?.[1]).find(Boolean);
-    output ??= blocks.find(b => ['', 'text', 'txt', 'output'].includes(b.lang) && !RUN.test(b.lines[0]))?.lines ?? [];
-    return { title, tagline, command: (command ?? '').replace(/\s+#.*$/, '').trim(), output };
+    // The marked block, else the first console block with output. A marked block without a prompt is the output alone.
+    const marked = blocks.find(b => b.hero);
+    const found = marked ? prompt(marked.lines) ?? { output: marked.lines }
+        : blocks.filter(b => b.lang === 'console').map(b => prompt(b.lines)).find(p => p?.output.length);
+    const command = found?.command ?? blocks.filter(b => ['sh', 'bash', 'shell', 'zsh', ''].includes(b.lang))
+        .flatMap(b => b.lines).map(l => l.match(RUN)?.[1]).find(Boolean);
+    const output = found?.output ?? blocks.find(b => ['', 'text', 'txt', 'output'].includes(b.lang) && !RUN.test(b.lines[0]))?.lines ?? [];
+    // <!-- look-what-i-can-do highlight="…" --> sets options without showing on the page. Outside code blocks only:
+    // a README that documents the comment in an example must not configure itself with it.
+    const options = {};
+    for (const [, k, v] of (prose.match(/<!--\s*look-what-i-can-do\b([\s\S]*?)-->/)?.[1] ?? '').matchAll(/(\w+)="([^"]*)"/g)) if (k === 'highlight') options.highlight = v;
+    return { title, tagline, command: (command ?? '').replace(/\s+#.*$/, '').trim(), output, marked: !!marked, options };
 }
 
 // ---------- terminal output ----------
@@ -306,10 +317,11 @@ async function main() {
         lines = trim(r.output.map(text => [{ text }])); // README code blocks carry no colors, so none are added
         source = lines.length ? null : 'replayed  nothing: the README has no example output. Add one, or use --live';
     }
-    const hero = heroSvg({ title: r.title, tagline: r.tagline, command, lines, highlight: values.highlight });
+    const highlight = values.highlight ?? r.options.highlight;
+    const hero = heroSvg({ title: r.title, tagline: r.tagline, command, lines, highlight });
     const shown = hero.shown.length < lines.length ? `${hero.shown.length - 1} of ${lines.length} lines (cut marked ⋮)` : `${lines.length} line${lines.length === 1 ? '' : 's'}`;
     source ??= `replayed  ${shown} of example output, as written (READMEs have no colors; --live runs it)`;
-    if (values.highlight && !hero.highlighted) console.error(`highlight: no shown line contains "${values.highlight}"`);
+    if (highlight && !hero.highlighted) console.error(`highlight: no shown line contains "${highlight}"`);
 
     const t0 = Date.now();
     if (gif) { try { await renderGif(hero, out); } catch (e) { fail(e.message); } }
@@ -320,6 +332,7 @@ async function main() {
     console.log(`🤸 look what I can do!
 
   read      ${show(readme)}: ${r.title}
+  block     ${r.marked ? 'the one marked hero' : 'guessed. Mark yours with ```console hero to be sure'}
   ${source}
   rendered  ${show(out)} · ${hero.W}×${hero.H} · ${hero.seconds.toFixed(1)} s loop · ${kb < 100 ? kb.toFixed(1) : Math.round(kb)} KB · in ${((Date.now() - t0) / 1000).toFixed(1)} s
 
@@ -330,5 +343,7 @@ Paste at the top of your README:
 </p>`);
 }
 
-// Standalone entry: `node lwicd.mjs` or the bins (realpath: npx runs it through a .bin symlink).
-if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) main().catch(e => { console.error(`look-what-i-can-do: ${e.message}`); process.exit(1); });
+// Run directly (`node lwicd.mjs`, or a bin: realpath because npx runs it through a .bin symlink), not imported.
+// argv[1] may not be a file at all (node -e, some hosts), so a failed lookup means "imported".
+export const runDirectly = url => { try { return realpathSync(process.argv[1]) === fileURLToPath(url); } catch { return false; } };
+if (runDirectly(import.meta.url)) main().catch(e => { console.error(`look-what-i-can-do: ${e.message}`); process.exit(1); });
