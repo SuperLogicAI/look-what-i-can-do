@@ -1,0 +1,12 @@
+{
+  "name": "look-what-i-can-do",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Your README, as an animated SVG hero. Replays the example output your README shows, or runs it live with real colors. GIF export too.",
+  "type": "module",
+  "bin": { "look-what-i-can-do": "lwicd.mjs", "lwicd": "lwicd.mjs" },
+  "files": ["lwicd.mjs"],
+  "engines": { "node": ">=20" },
+  "scripts": { "test": "node --test" },
+  "dependencies": { "playwright-core": "1.62.1" }
+}

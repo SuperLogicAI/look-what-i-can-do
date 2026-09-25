@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="774" viewBox="0 0 1280 774" xml:space="preserve" role="img" aria-label="agent-nocap 🧢: Your coding agent said &quot;all tests pass.&quot; Was that cap?">
+<style>
+text{font:16px ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace;fill:#e6edf3;white-space:pre}
+.t{font:800 56px -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;letter-spacing:-1px}.s{font:400 23px -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;fill:#8b98a5}
+.a{animation:8.57s ease-out infinite both}.g{transform-box:fill-box;transform-origin:left center}
+@media (prefers-reduced-motion:reduce){.a{animation:none}.c{display:none}}
+@keyframes k0{0%,93.00%{opacity:1}100%{opacity:0}}
+@keyframes k1{0%,0.00%{opacity:0;transform:translateY(14px)}7.00%,100%{opacity:1;transform:none}}
+@keyframes k2{0%,4.08%{opacity:0;transform:translateY(14px)}11.08%,100%{opacity:1;transform:none}}
+@keyframes k3{0%,8.16%{opacity:0;transform:translateY(14px)}13.99%,100%{opacity:1;transform:none}}
+@keyframes k4{0%,13.99%{opacity:0}14.11%,100%{opacity:1}}
+@keyframes k5{0%,14.64%{opacity:0}14.75%,100%{opacity:1}}
+@keyframes k6{0%,15.28%{opacity:0}15.39%,100%{opacity:1}}
+@keyframes k7{0%,16.56%{opacity:0}16.68%,100%{opacity:1}}
+@keyframes k8{0%,17.20%{opacity:0}17.32%,100%{opacity:1}}
+@keyframes k9{0%,17.84%{opacity:0}17.96%,100%{opacity:1}}
+@keyframes k10{0%,18.48%{opacity:0}18.60%,100%{opacity:1}}
+@keyframes k11{0%,19.13%{opacity:0}19.24%,100%{opacity:1}}
+@keyframes k12{0%,19.77%{opacity:0}19.88%,100%{opacity:1}}
+@keyframes k13{0%,20.41%{opacity:0}20.52%,100%{opacity:1}}
+@keyframes k14{0%,21.05%{opacity:0}21.17%,100%{opacity:1}}
+@keyframes k15{0%,21.69%{opacity:0}21.81%,100%{opacity:1}}
+@keyframes k16{0%,22.33%{opacity:0}22.45%,100%{opacity:1}}
+@keyframes k17{0%,22.97%{opacity:0}23.09%,100%{opacity:1}}
+@keyframes k18{0%,23.62%{opacity:0}23.73%,29.45%{opacity:1}29.56%,100%{opacity:0}}
+@keyframes k19{0%,29.45%{opacity:0;transform:translateY(4px)}32.36%,100%{opacity:1;transform:none}}
+@keyframes k20{0%,30.38%{opacity:0;transform:translateY(4px)}33.29%,100%{opacity:1;transform:none}}
+@keyframes k21{0%,31.31%{opacity:0;transform:translateY(4px)}34.23%,100%{opacity:1;transform:none}}
+@keyframes k22{0%,32.24%{opacity:0;transform:translateY(4px)}35.16%,100%{opacity:1;transform:none}}
+@keyframes k23{0%,33.18%{opacity:0;transform:translateY(4px)}36.09%,100%{opacity:1;transform:none}}
+@keyframes k24{0%,34.11%{opacity:0;transform:translateY(4px)}37.03%,100%{opacity:1;transform:none}}
+@keyframes k25{0%,35.04%{opacity:0;transform:translateY(4px)}37.96%,100%{opacity:1;transform:none}}
+@keyframes k26{0%,35.98%{opacity:0;transform:translateY(4px)}38.89%,100%{opacity:1;transform:none}}
+@keyframes k27{0%,36.91%{opacity:0;transform:translateY(4px)}39.83%,100%{opacity:1;transform:none}}
+@keyframes k28{0%,37.84%{opacity:0;transform:translateY(4px)}40.76%,100%{opacity:1;transform:none}}
+@keyframes k29{0%,38.78%{opacity:0;transform:translateY(4px)}41.69%,100%{opacity:1;transform:none}}
+@keyframes k30{0%,39.71%{opacity:0;transform:translateY(4px)}42.62%,100%{opacity:1;transform:none}}
+@keyframes k31{0%,40.64%{opacity:0;transform:translateY(4px)}43.56%,100%{opacity:1;transform:none}}
+@keyframes k32{0%,41.57%{opacity:0;transform:translateY(4px)}44.49%,100%{opacity:1;transform:none}}
+@keyframes k33{0%,42.51%{opacity:0;transform:translateY(4px)}45.42%,100%{opacity:1;transform:none}}
+@keyframes k34{0%,43.44%{opacity:0;transform:translateY(4px)}46.36%,100%{opacity:1;transform:none}}
+@keyframes k35{0%,44.37%{opacity:0;transform:translateY(4px)}47.29%,100%{opacity:1;transform:none}}
+@keyframes k36{0%,45.31%{opacity:0;transform:translateY(4px)}48.22%,100%{opacity:1;transform:none}}
+@keyframes k37{0%,46.24%{opacity:0;transform:translateY(4px)}49.15%,100%{opacity:1;transform:none}}
+@keyframes k38{0%,47.17%{opacity:0;transform:translateY(4px)}50.09%,100%{opacity:1;transform:none}}
+</style>
+<rect width="1280" height="774" fill="#0b0f14"/>
+<g class="a" style="animation-name:k0">
+<text x="72" y="88" class="a t" style="animation-name:k1">agent-nocap 🧢</text>
+<text x="72" y="136" class="a s" style="animation-name:k2">Your coding agent said &quot;all tests pass.&quot; Was that cap?</text>
+<g class="a" style="animation-name:k3">
+<rect x="72.5" y="167.5" width="1135" height="577" rx="14" fill="#11161d" stroke="#232b35"/>
+<path d="M73 202h1134" stroke="#232b35"/>
+<circle cx="92" cy="185" r="6" fill="#ff5f57"/><circle cx="112" cy="185" r="6" fill="#febc2e"/><circle cx="132" cy="185" r="6" fill="#28c840"/>
+<text x="95" y="233.6"><tspan fill="#ff7b72" font-weight="700">❯</tspan> <tspan class="a" style="animation-name:k4">n</tspan><tspan class="a" style="animation-name:k5">p</tspan><tspan class="a" style="animation-name:k6">x</tspan> <tspan class="a" style="animation-name:k7">a</tspan><tspan class="a" style="animation-name:k8">g</tspan><tspan class="a" style="animation-name:k9">e</tspan><tspan class="a" style="animation-name:k10">n</tspan><tspan class="a" style="animation-name:k11">t</tspan><tspan class="a" style="animation-name:k12">-</tspan><tspan class="a" style="animation-name:k13">n</tspan><tspan class="a" style="animation-name:k14">o</tspan><tspan class="a" style="animation-name:k15">c</tspan><tspan class="a" style="animation-name:k16">a</tspan><tspan class="a" style="animation-name:k17">p</tspan><tspan class="a c" style="animation-name:k18">█</tspan></text>
+<text x="95" y="257.6" class="a o" style="animation-name:k19">Scanned 1533 agent sessions.</text>
+<text x="95" y="281.6" class="a o" style="animation-name:k20"></text>
+<text x="95" y="305.6" class="a o" style="animation-name:k21">Agents claimed &quot;tests pass / build clean / verified&quot; 221 times:</text>
+<text x="95" y="329.6" class="a o" style="animation-name:k22">  backed        175     (79%)  a matching check passed after the last edit</text>
+<text x="95" y="353.6" class="a o" style="animation-name:k23">  unbacked      32      (14%)  no matching check with a known result in that turn</text>
+<text x="95" y="377.6" class="a o" style="animation-name:k24">  contradicted  11      (5%)  the last matching check in that turn failed</text>
+<text x="95" y="401.6" class="a o" style="animation-name:k25">  stale         3       (1%)  code was edited after the last passing check</text>
+<text x="95" y="425.6" class="a o" style="animation-name:k26"></text>
+<text x="95" y="449.6" class="a o" style="animation-name:k27">Checks run: 822, failed: 93, failures hidden by &quot;| tail&quot;-style pipes: 34</text>
+<text x="95" y="473.6" class="a o" style="animation-name:k28">Retry loops (same command failed 3+ times in a session): 6</text>
+<text x="95" y="497.6" class="a o" style="animation-name:k29"></text>
+<text x="95" y="521.6" class="a o" style="animation-name:k30">By host and active plugins (groups with checks or claims):</text>
+<text x="95" y="545.6" class="a o" style="animation-name:k31">  claude: caveman+ponytail     514 sessions, 568 checks, 49 failed, 34 hidden by pipes, 184 claims (158 backed)</text>
+<text x="95" y="569.6" class="a o" style="animation-name:k32">  claude: other-hooks          822 sessions, 0 checks, 0 failed, 0 hidden by pipes, 1 claims (0 backed)</text>
+<text x="95" y="593.6" class="a o" style="animation-name:k33">  codex: none                  162 sessions, 254 checks, 44 failed, 0 hidden by pipes, 36 claims (17 backed)</text>
+<text x="95" y="617.6" class="a o" style="animation-name:k34"></text>
+<text x="95" y="641.6" class="a o" style="animation-name:k35">Stop pipes hiding failures: the pipefail hook adds `set -o pipefail` to piped checks. See the README.</text>
+<text x="95" y="665.6" class="a o" style="animation-name:k36"></text>
+<text x="95" y="689.6" class="a o" style="animation-name:k37">Heuristic audit of local transcripts. Nothing left this machine.</text>
+<text x="95" y="713.6" class="a o" style="animation-name:k38">Agent-nocap by //Super Logic AI · github.com/SuperLogicAI/agent-nocap</text>
+</g>
+</g>
+</svg>
