@@ -3,7 +3,7 @@
 > 🤸 **Your README, as an animated hero. Zero setup from a URL.**
 > Paste one `<img>` line and your README's own command and output play at the top of it: an animated SVG of a few KB, in full color, that re-renders when the README changes. The CLI does the same on your machine, adds `--live` for real terminal colors, and exports a GIF for X and LinkedIn.
 
-Status: proposal v2, 2026-09-24, Super Logic AI. It was rewritten after two rounds of external review by a developer who built a profile-README generator. **Built:** the CLI, with animated SVG as the primary output, GIF export, and replay and live modes (`lwicd.mjs`); the ```` ```console hero ```` marker and options comment (§3.3); and the hosted URL handler (`serve.mjs`, §3.4), tested locally against real GitHub. See the [README](README.md). **Not built:** the deployment (it needs a go-ahead and a domain) and the GitHub Action. Measurements come from the founder's machine and from live requests to GitHub on 2026-09-24.
+Status: proposal v2, 2026-09-24, Super Logic AI. It was rewritten after two rounds of external review by a developer who built a profile-README generator. **Built:** the CLI, with animated SVG as the primary output, GIF export, and replay and live modes (`lwicd.mjs`); the ```` ```console hero ```` marker and options comment (§3.3); and the hosted URL handler (`serve.mjs`, §3.4), tested locally against real GitHub. See the [README](README.md). **Not built:** the GitHub Action. **Live since 2026-09-24:** https://lookwhaticando.dev, served by a Cloudflare Worker. Measurements come from the founder's machine and from live requests to GitHub on 2026-09-24.
 
 **North star (a target, not a claim):** the default way a repo gets its hero image. "Made with look-what-i-can-do" appears in more READMEs every week, and every one of those images shows output the tool can really produce.
 
@@ -42,6 +42,8 @@ Status: proposal v2, 2026-09-24, Super Logic AI. It was rewritten after two roun
 | GitHub REST API | 60 requests an hour without a token |
 | Commit SHA without the API | `git ls-remote <repo> HEAD`: 0.9 s |
 | GitHub docs | For stale camo images, serve `Cache-Control: no-cache`; as a last resort, `curl -X PURGE` the camo URL. README precedence is `.github/`, then root, then `docs/`. Content past 500 KiB is truncated |
+| Live on lookwhaticando.dev (Cloudflare Worker) | First request 2.1 s (new domain, cold instance, GitHub fetches), then a `304` on revalidation. Output is byte-identical to the local Node run (same ETag). Private repos, including this one while it's private, are refused |
+| Through GitHub's camo (live) | Serves our animated SVG byte-for-byte as `image/svg+xml`, keeps `no-cache`, and allows inline styles. **It still caches each image for about 60 s:** over 8 minutes of views every 30 s, 17 views produced 9 Worker requests, one full refetch a minute. So freshness is at worst about 7 minutes, and Worker traffic is capped at about 1 request per image per minute per camo cache location, not one per view |
 | Hosted handler against real GitHub (run locally) | agent-nocap: 200 `image/svg+xml`, `no-cache`, an ETag, 7.9 KB, 1.1 s cold (one API call plus one raw fetch). Revalidation: `304` in 1 ms. `?highlight=`: 1 ms with a new ETag. The private rent_roll: a `200` error SVG coded `not-found`, with the same message a missing repo gets, so it doesn't reveal that a private repo exists |
 | Tests | 25 `node:test` tests, synthetic data only. The CLI tests cover "replay adds no colors", "the footer is never dropped", "every element stays on one loop" and "the SVG path needs no browser". The hosted tests use a fake GitHub and cover freshness, README lookup order, error images, privacy, stale-if-error and shared fetches |
 
@@ -70,7 +72,7 @@ Status: proposal v2, 2026-09-24, Super Logic AI. It was rewritten after two roun
 
 | Lane | Setup | Output | Colors | Freshness | Private repos |
 |---|---|---|---|---|---|
-| **URL** `lookwhaticando.dev/<owner>/<repo>.svg` | Paste one line | SVG | README text, which has none. A committed capture later (§3.5) | About 6 min after a README edit (§3.4) | Refused: camo URLs are public |
+| **URL** `lookwhaticando.dev/<owner>/<repo>.svg` | Paste one line | SVG | README text, which has none. A committed capture later (§3.5) | About 7 min after a README edit (§3.4) | Refused: camo URLs are public |
 | **CLI** `npx look-what-i-can-do` | None beyond Node | SVG, or GIF with `--gif` | Real, with `--live` | Whenever you run it | Fine: it's local |
 | **GitHub Action** | One workflow file | SVG pushed to an `output` branch | Real, if run with `--live` in CI | On push, plus raw's 5-minute cache | Fine: their repo, their token |
 
@@ -93,12 +95,12 @@ Known gap, stated rather than hidden: terminal background colors are dropped, be
 - **Fallback:** today's heuristics. The CLI says which block it used and suggests adding the marker. The URL does the same inside its error image when it finds nothing.
 - **Determinism:** the same README bytes and renderer version always produce the same SVG bytes.
 
-### 3.4 Hosted URL: the fetch-and-cache contract (built in `serve.mjs`, not deployed)
+### 3.4 Hosted URL: the fetch-and-cache contract (live on lookwhaticando.dev)
 
 1. **Find the README:** one authenticated `GET /repos/{owner}/{repo}/readme` per new repo. It returns the README GitHub actually displays, in any case or extension. Cache the path for 24 hours and look it up again on a 404. If the API budget runs out, check raw in GitHub's order in parallel: the `.github/`, root and `docs/` folders, each with `README.md`, `readme.md` and `Readme.md`. The first check that isn't a clean 404 decides. A network error there means GitHub trouble, not "no README", and it doesn't fall through to a lower-priority README. Accept `?path=` for monorepo packages and `?ref=` for branches.
 2. **Fetch:** `raw.githubusercontent.com/<owner>/<repo>/HEAD/<path>` with `If-None-Match` set to the stored ETag. Do this at most once a minute per repo, with concurrent requests sharing one fetch. Read at most 500 KiB, where GitHub truncates.
-3. **Cache and respond:** cache the render under sha256(README bytes, renderer version, options), and send that hash as our `ETag`. Always send `Content-Type: image/svg+xml; charset=utf-8` and `Cache-Control: no-cache`, GitHub's documented camo setting, so camo checks back on every view. We answer those checks with a `304` from memory.
-4. **Freshness:** about 6 minutes at worst after a README edit (raw's 5-minute cache plus our 1-minute check). Raw applies the same 5-minute cache to images committed to a repo. Faster later: pin to the commit SHA (via git `ls-refs`, not the REST API) and fetch that commit's URL, which bypasses raw's cache, for about 1 minute. Instant updates would need GitHub App push webhooks.
+3. **Cache and respond:** cache the render under sha256(README bytes, renderer version, options), and send that hash as our `ETag`. Always send `Content-Type: image/svg+xml; charset=utf-8` and `Cache-Control: no-cache`, GitHub's documented camo setting. Measured on the live service, camo still keeps each image for about 60 seconds, then fetches it again in full (it doesn't send our ETag back). We answer from memory in milliseconds either way. Other clients that send `If-None-Match` get a `304`.
+4. **Freshness:** about 7 minutes at worst after a README edit: raw's 5-minute cache, plus our 1-minute check, plus camo's roughly 1-minute hold. Raw applies the same 5-minute cache to images committed to a repo. Faster later: pin to the commit SHA (via git `ls-refs`, not the REST API) and fetch that commit's URL, which bypasses raw's cache, for about 1 minute. Instant updates would need GitHub App push webhooks.
 5. **Errors never render as a broken image:** always a `200` with an error SVG in the normal frame, `no-cache`, and an `X-LWICD-Error` header for our own monitoring. Cases: bad URL, repo private or missing (same message for both), no README, a non-Markdown README, nothing to animate ("add ```` ```console hero ````"), GitHub timing out. A README over 500 KiB isn't an error: it's read up to 500 KiB, like GitHub shows it. Errors are cached for the same minute, so a broken embed on a busy page doesn't hammer GitHub. When GitHub is slow, serve the last good render marked `X-LWICD-Stale`, because camo gives up quickly. Never do that for a repo that turned private or disappeared.
 6. **Private repos are refused by design.** Anyone who has a camo URL can load it, so a hosted render of a private README would leak it. The CLI and the Action cover private repos.
 
@@ -120,7 +122,16 @@ Known gap, stated rather than hidden: terminal background colors are dropped, be
   - Text is `<text>`/`<tspan>` with `xml:space="preserve"`. Tabs are expanded to 8-column stops. `role="img"` plus `aria-label`, and `prefers-reduced-motion` shows the finished frame.
   - **Fonts:** the viewer's system monospace. If widths drift in practice, embed a subsetted monospace font as a data URI for about 20–40 KB; readme-typing-svg shows that loads through camo.
 - **Live capture:** a pseudo-terminal via `script` on macOS and Linux (no native modules), with `COLORTERM=truecolor`. Package runners run outside the repo. Failed runs are refused. Windows is out of scope.
-- **Hosted service:** a Vercel function with an in-memory and KV cache and shared (single-flight) fetches. Open source, so anyone can host their own copy.
+- **Hosted service:** a Cloudflare Worker (`serve.mjs`, 18 KB bundle) on lookwhaticando.dev, which already uses Cloudflare DNS. It has an in-memory cache per instance and shared (single-flight) fetches. `render.mjs` and `serve.mjs` import nothing from Node, and a test enforces that, so the same code runs in the CLI, in plain Node (`node lwicd.mjs serve`) and in workerd. Open source, so anyone can host their own copy.
+- **Why Cloudflare, not Vercel:** Vercel's free Hobby plan is non-commercial only ("any project intended for financial gain by anyone involved in its production"), and a Super Logic AI-branded tool counts. Hobby also has hard caps with no way to buy more, so embeds would break if it took off. Cost per month at README views, where each view is about one request under `no-cache`:
+
+  | Views per month | Vercel Pro | Cloudflare Workers |
+  |---|---|---|
+  | 1M | ~$25 | $0 (Free plan: 100k requests a day) |
+  | 10M | ~$30–35 | $5 (Paid plan) |
+  | 100M | ~$270–300 | ~$33 |
+
+  This table is an upper bound: it assumes one request per view. Measured, camo caches each image for about 60 s, so a popular README costs at most about one request a minute per camo cache location. Price sources, 2026-09-24. Vercel Pro: $20 a month, 10M edge requests included and then $2 per 1M, plus $0.60 per 1M function calls. Workers Paid: $5 a month, 10M requests included and then $0.30 per 1M, plus 30M CPU-ms included. **Before launch, switch to Workers Paid.** The Free plan fails requests past 100k a day and past 10 ms of CPU per request, and a failed request is a broken image in someone's README.
 - **Privacy:** replay reads only the README. Live runs a command you named, prints it first, and keeps the output local. The URL never runs code and never serves private repos.
 
 ---
@@ -146,7 +157,7 @@ Known gap, stated rather than hidden: terminal background colors are dropped, be
 |---|---|---|---|
 | **0: GIF CLI** | done 2026-09-24 | Replay, `--live`, fit, highlight, snippet | Superseded by Phase 1 |
 | **1: SVG writer** | done 2026-09-24 | SVG primary; `--gif` exports the same SVG; 13 tests | ✅ SVG ≤ 50 KB (7.9 KB for nocap) ✅ animates in `<img>` in Chromium ⏳ checked on a private test repo: github.com in Safari, Firefox and Chrome, the GitHub mobile app, npmjs.com |
-| **2: URL, marker, launch** | 2–3 wk | ✅ Marker and options comment. ✅ URL handler per §3.4 with error SVGs (local). ⏳ Deployment (Vercel + domain), the Action, npm and GitHub publish | README edits show up within 6 min; zero broken images across every error case (✅ in tests); p95 under 300 ms on a cache hit (1 ms locally) and under 1.5 s on a miss (1.1 s cold locally); ≥ 25 public repos embed it within 30 days |
+| **2: URL, marker, launch** | 2–3 wk | ✅ Marker and options comment. ✅ URL handler per §3.4 with error SVGs. ✅ Worker live on lookwhaticando.dev. ⏳ The Action, npm publish, a public repo | README edits show up within 7 min (the measured worst case); zero broken images across every error case (✅ in tests); p95 under 300 ms on a cache hit (1 ms locally) and under 1.5 s on a miss (1.1 s cold locally); ≥ 25 public repos embed it within 30 days |
 | **3: Pure-JS GIF + faster freshness** | later | resvg-wasm and a JS GIF encoder (drops Chromium and ffmpeg); commit-SHA pinning (~1 min); `capture` | GIF export works with no browser; identical bytes on macOS and Linux |
 | **4: GitHub App** | only if asked | Instant updates via push webhooks | Demand from Phase 2 users |
 
@@ -161,7 +172,7 @@ Stars are an outcome, not a gate.
 | Thin moat: any agent writes a vhs tape on request | Zero setup via URL, better default design, the no-cap contract |
 | Used once per launch, not daily | The URL re-renders itself when the README changes; the Action and `--check` add repeat use |
 | Heuristics pick the wrong block | The explicit marker; error images that teach it |
-| Freshness expectations | Promise "about 6 minutes" up front, document the camo purge, and add SHA pinning when people ask |
+| Freshness expectations | Promise "about 7 minutes" up front (measured), document the camo purge, and add SHA pinning when people ask |
 | Camo timeouts | Cache hits answer in milliseconds; serve the last good render if GitHub is slow |
 | Our uptime: READMEs depend on our server | Open source for self-hosting; the Action and committed-SVG lanes don't need us |
 | GitHub throttling our raw fetches | At most one conditional fetch per repo per minute, with longer intervals for quiet repos. Per-IP limits on our side are useless, because all embed traffic arrives from camo's IPs, so limit per repo |
@@ -189,6 +200,6 @@ It's a spin-off of the Supra ideation, like nocap and rentroll, and the only one
 1. **Private test repo:** OK to create `SuperLogicAI/lwicd-test` to close the Phase 1 gate (browsers, mobile app, npm)?
 2. **Name and bins:** `look-what-i-can-do`, with `lwicd` as a short alias. The npm name was free on 2026-09-24.
 3. **License:** MIT, like agent-nocap (recommended).
-4. **Deploying the URL lane:** a go-ahead to deploy `serve.mjs` (Vercel is the default), a domain (`lookwhaticando.dev` or similar, not yet checked), and a cost ceiling. Optional `GITHUB_TOKEN`: a fine-grained token with public-repository read access only. It just raises the lookup limit, since README bytes never use it.
+4. **URL lane:** ✅ domain `lookwhaticando.dev` (bought 2026-09-24, Cloudflare DNS). ✅ host: Cloudflare Workers. ⏳ Workers Paid ($5/mo) before launch. Optional `GITHUB_TOKEN` Worker secret: a fine-grained token with public-repository read access only. It just raises the lookup limit, since README bytes never use it.
 5. **Credit in the snippet:** an invisible HTML comment (recommended), a visible credit, or none.
 6. **Publishing the CLI:** before Phase 2 or with it. For an SVG-only first release, playwright-core should become optional so `npx` stays light.

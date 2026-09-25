@@ -1,0 +1,7 @@
+{
+	// The hosted URL (serve.mjs) as a Cloudflare Worker. The Worker is the origin for lookwhaticando.dev; Cloudflare manages its DNS record.
+	"name": "look-what-i-can-do",
+	"main": "serve.mjs",
+	"compatibility_date": "2026-09-24",
+	"routes": [{ "pattern": "lookwhaticando.dev", "custom_domain": true }]
+}

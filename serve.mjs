@@ -1,14 +1,13 @@
-#!/usr/bin/env node
 // look-what-i-can-do, hosted: GET /<owner>/<repo>.svg renders a public repo's README as an animated hero. PROPOSAL §3.4.
+// Runs as a Cloudflare Worker (the default export below) and locally via `node lwicd.mjs serve`. No Node imports: a test keeps it that way.
 // README bytes only ever come from unauthenticated raw.githubusercontent.com fetches, so a private repo can't render even
 // when GITHUB_TOKEN can see it. Camo URLs are public: a private README must never leak through one.
-import { createHash } from 'node:crypto';
-import { createServer } from 'node:http';
-import { parseArgs } from 'node:util';
-import { readReadme, heroSvg, trim, runDirectly, VERSION } from './lwicd.mjs';
+import { readReadme, heroSvg, trim, VERSION } from './render.mjs';
 
 const RAW = 'https://raw.githubusercontent.com', API = 'https://api.github.com';
-const CHECK_MS = 60_000, PATH_MS = 24 * 3600_000, MAX_BYTES = 500 * 1024, TIMEOUT_MS = 2500, MAX_REPOS = 1000;
+const CHECK_MS = 60_000, PATH_MS = 24 * 3600_000, MAX_BYTES = 500 * 1024, TIMEOUT_MS = 2500;
+// Per instance: at most 500 repos, each keeping up to 200 output lines of up to 500 characters, well inside a Worker's 128 MB.
+const MAX_REPOS = 500, MAX_LINES = 200, MAX_LINE = 500;
 const OWNER = /^[A-Za-z0-9][A-Za-z0-9-]{0,38}$/, REPO = /^(?!\.\.?$)[\w.-]{1,100}$/, SAFE = /^(?!\/)(?!.*\.\.)[\w.\-/]{1,200}$/;
 const MARKDOWN = /\.(md|markdown|mdown|mkdn)$/i;
 // GitHub shows the first README it finds in .github/, then the root, then docs/.
@@ -24,6 +23,8 @@ const ERRORS = {
 };
 const SVG_HEADERS = { 'content-type': 'image/svg+xml; charset=utf-8', 'cache-control': 'no-cache', // GitHub's documented camo setting
     'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'", 'x-content-type-options': 'nosniff' };
+const sha256 = async data => [...new Uint8Array(await crypto.subtle.digest('SHA-256', typeof data === 'string' ? new TextEncoder().encode(data) : data))]
+    .map(b => b.toString(16).padStart(2, '0')).join('');
 
 // Errors are 200s: camo shows any other status as a broken image. The error code rides in a header for our own monitoring.
 function errorResponse(code, name) {
@@ -33,13 +34,24 @@ function errorResponse(code, name) {
     return new Response(svg, { headers: { ...SVG_HEADERS, 'x-lwicd-error': code } });
 }
 
+const usage = origin => `look-what-i-can-do ${VERSION}, hosted: an animated hero for any public repo's README.
+
+  GET /<owner>/<repo>.svg              the README GitHub shows on the repo page
+      ?path=packages/cli/README.md     another README (monorepos)
+      ?ref=next                        a branch or tag
+      ?highlight=text                  sweep a highlight over the first output line containing text
+
+Embed: <img src="${origin}/<owner>/<repo>.svg" width="800" alt="...">
+README edits show up within about 7 minutes. Private repos are never served.
+`;
+
 /** A fetch-style handler for GET /<owner>/<repo>.svg. fetch, token and clock are injectable for tests. */
-export function createHandler({ fetch = globalThis.fetch, token = process.env.GITHUB_TOKEN, now = Date.now } = {}) {
+export function createHandler({ fetch = globalThis.fetch, token = globalThis.process?.env?.GITHUB_TOKEN, now = Date.now } = {}) {
     const repos = new Map(); // "owner/repo@ref:path" → { path, pathAt, etag, hash, readme, checkedAt, error, inflight, render }
     const entry = key => {
         let e = repos.get(key);
         if (!e) {
-            // ponytail: in-memory per instance, oldest repo evicted first; move to a shared KV when one instance isn't enough
+            // ponytail: in-memory per instance, oldest repo evicted first; share through the Cache API or KV when instances multiply
             if (repos.size >= MAX_REPOS) repos.delete(repos.keys().next().value);
             repos.set(key, e = {});
         }
@@ -80,12 +92,14 @@ export function createHandler({ fetch = globalThis.fetch, token = process.env.GI
             if (!pathParam && !e.relocated) { e.path = undefined; e.relocated = true; return refresh(e, owner, repo, ref, pathParam); } // moved? look again once
             throw new Fail('not-found');
         }
-        const chunks = [];
-        let n = 0;
-        for await (const c of r.body) { chunks.push(c); if ((n += c.length) >= MAX_BYTES) break; } // GitHub shows the first 500 KiB too
-        const bytes = Buffer.concat(chunks).subarray(0, MAX_BYTES);
-        Object.assign(e, { etag: r.headers.get('etag'), hash: createHash('sha256').update(bytes).digest('hex'),
-            readme: readReadme(new TextDecoder().decode(bytes), repo), render: null, relocated: false });
+        const reader = r.body.getReader(), chunks = [];
+        for (let n = 0; n < MAX_BYTES;) { const { done, value } = await reader.read(); if (done) break; chunks.push(value); n += value.length; }
+        reader.cancel().catch(() => {}); // GitHub shows the first 500 KiB too
+        const bytes = new Uint8Array(await new Blob(chunks).slice(0, MAX_BYTES).arrayBuffer());
+        const readme = readReadme(new TextDecoder().decode(bytes), repo);
+        // ponytail: example output past 200 lines is cut before rendering, so ⋮ and the kept footer come from those 200
+        readme.output = readme.output.slice(0, MAX_LINES).map(l => l.slice(0, MAX_LINE));
+        Object.assign(e, { etag: r.headers.get('etag'), hash: await sha256(bytes), readme, render: null, relocated: false });
     }
 
     // At most one GitHub check per repo per minute, shared by every request that arrives meanwhile. Errors are cached as long.
@@ -105,9 +119,10 @@ export function createHandler({ fetch = globalThis.fetch, token = process.env.GI
 
     return async function handle(request) {
         const url = new URL(request.url);
-        if (url.pathname === '/') return new Response(USAGE, { headers: { 'content-type': 'text/plain; charset=utf-8' } });
+        if (url.pathname === '/') return new Response(usage(url.origin), { headers: { 'content-type': 'text/plain; charset=utf-8' } });
         const m = url.pathname.match(/^\/([^/]+)\/([^/]+)\.svg$/);
-        if (!m) return new Response('Not found. Try /<owner>/<repo>.svg\n', { status: 404 });
+        if (!m) return url.pathname.endsWith('.svg') ? errorResponse('bad-request') // anything embedded as an image gets an image
+            : new Response('Not found. Try /<owner>/<repo>.svg\n', { status: 404 });
         const [, owner, repo] = m, q = url.searchParams;
         const ref = q.get('ref') ?? '', path = q.get('path'), highlight = q.get('highlight') ?? undefined;
         if (!OWNER.test(owner) || !REPO.test(repo) || (ref && !SAFE.test(ref)) || (path !== null && !SAFE.test(path)) || highlight?.length > 100)
@@ -115,7 +130,7 @@ export function createHandler({ fetch = globalThis.fetch, token = process.env.GI
         const name = `${owner}/${repo}`;
         try {
             const e = await fresh(`${name}@${ref}:${path ?? ''}`, owner, repo, ref, path);
-            const tag = `"${createHash('sha256').update(`${e.hash}\0${VERSION}\0${highlight ?? ''}`).digest('hex').slice(0, 32)}"`;
+            const tag = `"${(await sha256(`${e.hash}\0${VERSION}\0${highlight ?? ''}`)).slice(0, 32)}"`;
             if (e.render?.tag !== tag) {
                 const r = e.readme;
                 if (!r.command) throw new Fail('nothing');
@@ -132,31 +147,6 @@ export function createHandler({ fetch = globalThis.fetch, token = process.env.GI
     };
 }
 
-const USAGE = `look-what-i-can-do ${VERSION}, hosted: an animated hero for any public repo's README.
-
-  GET /<owner>/<repo>.svg              the README GitHub shows on the repo page
-      ?path=packages/cli/README.md     another README (monorepos)
-      ?ref=next                        a branch or tag
-      ?highlight=text                  sweep a highlight over the first output line containing text
-
-Embed: <img src="https://<this host>/<owner>/<repo>.svg" width="800" alt="...">
-README edits show up within about 6 minutes. Private repos are never served.
-`;
-
-/** The handler behind a plain Node HTTP server. */
-export function serve(port, handle = createHandler()) {
-    return createServer(async (req, res) => {
-        try {
-            const inm = req.headers['if-none-match'];
-            const response = await handle(new Request(`http://localhost${req.url}`, { method: req.method, headers: inm ? { 'if-none-match': inm } : {} }));
-            res.writeHead(response.status, Object.fromEntries(response.headers));
-            res.end(req.method === 'HEAD' ? undefined : Buffer.from(await response.arrayBuffer()));
-        } catch (e) { res.writeHead(500).end(String(e.message)); }
-    }).listen(port);
-}
-
-// `node serve.mjs [--port 8787]`
-if (runDirectly(import.meta.url)) {
-    const { values } = parseArgs({ options: { port: { type: 'string', default: '8787' } } });
-    serve(Number(values.port)).on('listening', () => console.log(`look-what-i-can-do: http://localhost:${values.port}/<owner>/<repo>.svg`));
-}
+// Cloudflare Worker entry. GITHUB_TOKEN, if set, is a Worker secret with public-repo read access only: it just raises the lookup limit.
+let worker;
+export default { fetch: (request, env = {}) => (worker ??= createHandler({ token: env.GITHUB_TOKEN }))(request) };

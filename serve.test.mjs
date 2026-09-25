@@ -2,7 +2,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { createHandler } from './serve.mjs';
+import { readFileSync } from 'node:fs';
+import worker, { createHandler } from './serve.mjs';
 
 const fence = '```';
 const readme = (out = 'all 9 checks passed') => ['# tool', '', 'Does a thing.', '', `${fence}console`, '$ npx tool', out, fence].join('\n');
@@ -81,7 +82,8 @@ test('errors are 200 SVGs with a code in a header, never broken images', async (
     const gh = fakeGitHub({ 'acme/rst/README.rst': 'Title\n=====', 'acme/empty/README.md': '# empty\n\nNo commands here.' });
     const handle = createHandler({ fetch: gh.fetch, now: clock().now });
     for (const [path, code] of [['/acme/missing.svg', 'not-found'], ['/acme/rst.svg', 'not-markdown'], ['/acme/empty.svg', 'nothing'],
-        ['/acme/tool.svg?path=../../etc/passwd', 'bad-request'], ['/-acme/tool.svg', 'bad-request'], ['/acme/..%2Fetc.svg', 'bad-request']]) {
+        ['/acme/tool.svg?path=../../etc/passwd', 'bad-request'], ['/-acme/tool.svg', 'bad-request'], ['/acme/..%2Fetc.svg', 'bad-request'],
+        ['/etc.svg', 'bad-request'], ['/a/b/c.svg', 'bad-request']]) {
         const r = await handle(req(path));
         assert.equal(r.status, 200, path);
         assert.equal(r.headers.get('x-lwicd-error'), code, path);
@@ -124,6 +126,13 @@ test('requests that arrive together share one GitHub fetch', async () => {
     const all = await Promise.all(Array.from({ length: 5 }, () => handle(req('/acme/tool.svg'))));
     assert.ok(all.every(r => r.status === 200));
     assert.deepEqual(gh.calls, ['GET api /repos/acme/tool/readme', 'GET raw /acme/tool/HEAD/README.md']);
+});
+
+test('the hosted code is Worker-safe: no Node imports, and the default export answers as a Worker', async () => {
+    for (const f of ['serve.mjs', 'render.mjs']) assert.doesNotMatch(readFileSync(new URL(f, import.meta.url), 'utf8'), /from\s+['"]node:|require\(/, f);
+    const r = await worker.fetch(new Request('https://lookwhaticando.dev/'), {});
+    assert.equal(r.status, 200);
+    assert.match(await r.text(), /Embed: <img src="https:\/\/lookwhaticando\.dev\/<owner>\/<repo>\.svg"/);
 });
 
 test('?highlight and the README comment both highlight; a highlight changes the ETag', async () => {

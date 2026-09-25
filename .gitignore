@@ -1,4 +1,5 @@
 node_modules/
 .DS_Store
+.wrangler/
 /look-what-i-can-do.svg
 /look-what-i-can-do.gif

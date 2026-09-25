@@ -31,7 +31,7 @@ Paste at the top of your README:
 node lwicd.mjs path/to/README.md           # animated SVG: needs Node and nothing else
 node lwicd.mjs path/to/README.md --live    # run the command in a terminal: real output, real colors
 node lwicd.mjs path/to/README.md --gif     # GIF export: npm install first; needs Chrome or Chromium, and ffmpeg
-node serve.mjs                             # the hosted URL, locally: http://localhost:8787/<owner>/<repo>.svg
+node lwicd.mjs serve                       # the hosted URL, locally: http://localhost:8787/<owner>/<repo>.svg
 npm test                                   # fixture tests, synthetic data only
 ```
 
@@ -53,11 +53,17 @@ Add `hero` after the language on the fence of the block you want: ```` ```consol
 
 Without a marker it guesses: the first `console` block with a `$ command` and output, else the first run command (`npx`, `npm`, `pip`, `brew`, `cargo`, `go`, `docker`, `node`, `python`, …) in a shell block with the first untagged or `text` block as its output. The CLI tells you which one it used. The title is the first `#` heading. The tagline is the first paragraph after it that isn't HTML, a badge or a table, cut to its first sentence past 100 characters.
 
-## Hosted URL (built, not deployed yet)
+## Hosted URL: lookwhaticando.dev
 
-`serve.mjs` serves `/<owner>/<repo>.svg` for any public repo: the README GitHub shows on the repo page, replayed as written. `?path=` picks another README (monorepos), `?ref=` a branch or tag, `?highlight=` a line.
+For a public repo, paste this at the top of its README with your owner and repo filled in. Nothing to install, nothing to commit:
 
-- **Fresh:** every response is `Cache-Control: no-cache` with an ETag, so GitHub's image proxy checks back on each view and gets a `304` from memory. GitHub is asked at most once a minute per repo, so README edits show up within about 6 minutes.
+```html
+<p align="center"><img src="https://lookwhaticando.dev/<owner>/<repo>.svg" width="800" alt="<repo>"></p>
+```
+
+`serve.mjs` serves `/<owner>/<repo>.svg` for any public repo: the README GitHub shows on the repo page, replayed as written. `?path=` picks another README (monorepos), `?ref=` a branch or tag, `?highlight=` a line. It runs as a Cloudflare Worker (`wrangler.jsonc`). `npx wrangler dev` runs it locally in the Workers runtime, and `node lwicd.mjs serve` runs it in plain Node.
+
+- **Fresh:** every response is `Cache-Control: no-cache` with an ETag. GitHub's image proxy holds each image for about a minute (measured), GitHub is asked at most once a minute per repo, and GitHub's raw files cache for 5 minutes. So README edits show up within about 7 minutes.
 - **Finds the right README:** one API call per repo per day. If that's rate-limited, it checks `.github/`, the root, then `docs/`, in GitHub's order.
 - **Private repos are never served:** README bytes only come from unauthenticated raw fetches, and image URLs are public.
 - **Errors are images, not broken icons:** a `200` with an SVG that says what's wrong and how to fix it, plus an `X-LWICD-Error` header.

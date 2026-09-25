@@ -6,7 +6,8 @@
 
 - `npm test`: `lwicd.test.mjs` (CLI and renderer) and `serve.test.mjs` (hosted URL against a fake GitHub). `node:test`, synthetic data only, no network. Run before claiming done. No linter configured.
 - `node lwicd.mjs [README.md] [-o file.svg] [--gif] [--live] [--command <cmd>] [--highlight <text>]`
-- `node serve.mjs [--port 8787]`: the hosted URL locally, `/<owner>/<repo>.svg`. It talks to real GitHub, with a 60/hour API limit without `GITHUB_TOKEN`.
+- `node lwicd.mjs serve [--port 8787]`: the hosted URL in plain Node. `npx wrangler dev`: the same in the Workers runtime. Both talk to real GitHub, with a 60/hour API limit without `GITHUB_TOKEN`.
+- `npx wrangler deploy`: deploys the Worker to lookwhaticando.dev (`wrangler.jsonc`). It is production: ask first. `npx wrangler tail look-what-i-can-do --format json`: the live request log (useful for checking what GitHub's camo actually sends).
 - The SVG path needs only Node. `--gif` needs Chromium (playwright-core's headless shell, or Google Chrome) and `ffmpeg` on PATH.
 - Re-render this repo's hero after README changes: `node lwicd.mjs -o docs/hero.svg`. Paste its real output into the README's ```` ```console hero ```` block first, then render again, so the hero replays a real run.
 
@@ -18,7 +19,7 @@
 - Replay runs nothing from the target repo. Only `--live` runs a command, and it prints the command first. The hosted URL never runs anything.
 - Hosted: README bytes only ever come from unauthenticated raw.githubusercontent.com fetches, so private repos can't be served even if a token can see them. Never add a code path that reads README content with a token. Errors are 200 SVGs (camo turns other statuses into broken images).
 - Live output can hold real data (rentroll prints real spend, nocap prints real counts). Never commit a live render of the founder's tools without asking. Examples in this repo are replays of public README text.
-- `lwicd.mjs` (CLI + renderer) and `serve.mjs` (hosted URL), Node ≥ 20. playwright-core (pinned) is used only by `--gif`.
+- Files: `render.mjs` (the pure renderer), `serve.mjs` (the hosted handler and the Cloudflare Worker entry), `lwicd.mjs` (the Node CLI: files, `--gif`, `--live`, `serve`). `render.mjs` and `serve.mjs` must never import from Node; a test enforces it, because the Worker can't load them otherwise. Node ≥ 20. playwright-core (pinned) is used only by `--gif`.
 - Mark deliberate shortcuts with `ponytail:` comments that name the ceiling and the upgrade path.
 - `package.json` stays `private: true`. Publishing to npm or GitHub, and deploying `serve.mjs`, are outward-facing: ask first.
 
@@ -26,4 +27,5 @@
 
 - Built: animated SVG writer (primary), `--gif` export of the same SVG, replay, `--live`, fit, highlight, the ```` ```console hero ```` marker plus options comment, and the hosted URL handler (`serve.mjs`, PROPOSAL §3.4), tested locally against real GitHub.
 - On hold (founder said wait): the private GitHub test repo for Safari, Firefox, GitHub mobile and npmjs.com.
-- Needs a go-ahead: deploying `serve.mjs` (Vercel, domain, cost ceiling). Not built: the GitHub Action.
+- Hosting: Cloudflare Workers on lookwhaticando.dev, live since 2026-09-24 (the founder bought the domain that day; its DNS is on Cloudflare). Chosen over Vercel because Hobby is non-commercial and caps usage, and Workers is about 10× cheaper at scale (PROPOSAL §4). Move to Workers Paid ($5/mo) before launch: Free fails requests past 100k a day, and a failed request is a broken image.
+- Repo: github.com/SuperLogicAI/look-what-i-can-do (private for now). Not built: the GitHub Action.
