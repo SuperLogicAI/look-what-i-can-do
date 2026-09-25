@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, chmodSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -173,7 +173,36 @@ test('cli: writes an SVG with no browser and prints the snippet; refuses other f
     }
 });
 
+test('cli: finds the README the way GitHub does, takes a folder, and says what to do when there is none', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'lwicd-find-'));
+    mkdirSync(join(dir, 'docs'));
+    writeFileSync(join(dir, 'docs', 'README.md'), ['# docs-only', '', `${fence}console hero`, '$ npx t', 'ok', fence].join('\n'));
+    const inside = spawnSync(process.execPath, [cli, '-o', 'a.svg'], { cwd: dir, encoding: 'utf8' });
+    assert.equal(inside.status, 0, inside.stderr);
+    assert.match(inside.stdout, /read {6}docs\/README\.md: docs-only/);
+    assert.equal(spawnSync(process.execPath, [cli, dir, '-o', join(dir, 'b.svg')], { encoding: 'utf8' }).status, 0);
+    const none = spawnSync(process.execPath, [cli], { cwd: mkdtempSync(join(tmpdir(), 'lwicd-empty-')), encoding: 'utf8' });
+    assert.equal(none.status, 2);
+    assert.match(none.stderr, /no README in .* \(looked in the folder, \.github\/ and docs\/\)\.\nRun it inside your repo/);
+});
+
 const hasScript = spawnSync('script', ['-h']).error?.code !== 'ENOENT';
+
+test('live commands run in the README\'s folder; npx retries outside only after "command not found"', { skip: !hasScript && 'no script command' }, () => {
+    // A fake npx: "own-tool" can't be found inside a repo (like agent-nocap in its own repo); everything reports where it ran.
+    const bin = mkdtempSync(join(tmpdir(), 'lwicd-bin-'));
+    writeFileSync(join(bin, 'npx'), '#!/bin/sh\nif [ "$1" = own-tool ] && [ -f ./README.md ]; then echo "sh: own-tool: command not found"; exit 127; fi\n'
+        + 'if [ -f ./README.md ]; then echo "ran in the repo"; else echo "ran outside the repo"; fi\n');
+    chmodSync(join(bin, 'npx'), 0o755);
+    const env = { ...process.env, PATH: `${bin}:${process.env.PATH}` };
+    for (const [tool, expected] of [['lister', 'ran in the repo'], ['own-tool', 'ran outside the repo']]) {
+        const dir = mkdtempSync(join(tmpdir(), 'lwicd-cwd-'));
+        writeFileSync(join(dir, 'README.md'), ['# t', '', `${fence}console hero`, `$ npx ${tool}`, 'placeholder', fence].join('\n'));
+        const r = spawnSync(process.execPath, [cli, 'capture'], { cwd: dir, env, encoding: 'utf8' });
+        assert.equal(r.status, 0, r.stderr);
+        assert.match(readFileSync(join(dir, 'README.md'), 'utf8'), new RegExp(`\\$ npx ${tool}\\n${expected}\\n`), tool);
+    }
+});
 test('capture: writes the command\'s real output into the marked block, colors dropped; a failing command changes nothing', { skip: !hasScript && 'no script command' }, () => {
     const dir = mkdtempSync(join(tmpdir(), 'lwicd-capture-'));
     const readme = join(dir, 'README.md');

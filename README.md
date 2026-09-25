@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="docs/hero.svg" width="800" alt="look-what-i-can-do 🤸: Your README, as an animated hero. One command.">
+  <img src="https://lookwhaticando.dev/SuperLogicAI/look-what-i-can-do.svg" width="800" alt="look-what-i-can-do 🤸: Your README, as an animated hero. One command.">
 </p>
 
 # look-what-i-can-do 🤸
 
 **Your README, as an animated hero. One command.**
 
-It reads your README's title, tagline, run command and example output, types the command, plays the output, and writes an animated SVG you paste at the top: a few KB, full color, sharp at any size. `--gif` exports the same hero as a GIF for places that don't take SVG, like X, LinkedIn and Product Hunt. The image above is this README, made by the command below. Where it's headed, a hosted URL with zero setup, is in [the proposal](PROPOSAL.md).
+It reads your README's title, tagline, run command and example output, types the command, plays the output, and writes an animated SVG you paste at the top: a few KB, full color, sharp at any size. `--gif` exports the same hero as a GIF for places that don't take SVG, like X, LinkedIn and Product Hunt. The image above is this README, served live from GitHub by the [hosted URL](#hosted-url-lookwhaticandodev) with nothing committed. The command below makes the same image locally.
 
 <!-- look-what-i-can-do highlight="rendered" -->
 ```console hero
@@ -28,13 +28,13 @@ Paste at the top of your README:
 ## Run it
 
 ```sh
-node lwicd.mjs path/to/README.md           # animated SVG: needs Node and nothing else
-node lwicd.mjs path/to/README.md --live    # run the command in a terminal: real output, real colors
-node lwicd.mjs path/to/README.md --gif     # GIF export: npm install first; needs Chrome or Chromium, and ffmpeg
-node lwicd.mjs capture path/to/README.md   # fill the ```console hero block with its command's real output
-node lwicd.mjs serve                       # the hosted URL, locally: http://localhost:8787/<owner>/<repo>.svg
-npm test                                   # fixture tests, synthetic data only
+npx look-what-i-can-do                     # in your repo: an animated SVG of your README's hero (needs only Node)
+npx look-what-i-can-do --live              # run the command in a terminal: real output, real colors
+npx look-what-i-can-do capture             # fill the ```console hero block with its command's real output
+npx -p look-what-i-can-do -p playwright-core lwicd --gif   # GIF export (also needs Chrome or Chromium, and ffmpeg)
 ```
+
+It uses the README GitHub would show: `.github/`, then the root, then `docs/`. Pass a file or a folder to use another. Inside this repo, `node lwicd.mjs serve` runs the hosted URL locally and `npm test` runs the tests.
 
 | Option | What it does |
 |---|---|

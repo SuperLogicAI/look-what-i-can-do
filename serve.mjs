@@ -2,7 +2,7 @@
 // Runs as a Cloudflare Worker (the default export below) and locally via `node lwicd.mjs serve`. No Node imports: a test keeps it that way.
 // README bytes only ever come from unauthenticated raw.githubusercontent.com fetches, so a private repo can't render even
 // when GITHUB_TOKEN can see it. Camo URLs are public: a private README must never leak through one.
-import { readReadme, heroSvg, trim, VERSION } from './render.mjs';
+import { readReadme, heroSvg, trim, README_PATHS as PROBES, VERSION } from './render.mjs';
 
 const RAW = 'https://raw.githubusercontent.com', API = 'https://api.github.com';
 const CHECK_MS = 60_000, PATH_MS = 24 * 3600_000, MAX_BYTES = 500 * 1024, TIMEOUT_MS = 2500;
@@ -10,8 +10,6 @@ const CHECK_MS = 60_000, PATH_MS = 24 * 3600_000, MAX_BYTES = 500 * 1024, TIMEOU
 const MAX_REPOS = 500, MAX_LINES = 200, MAX_LINE = 500;
 const OWNER = /^[A-Za-z0-9][A-Za-z0-9-]{0,38}$/, REPO = /^(?!\.\.?$)[\w.-]{1,100}$/, SAFE = /^(?!\/)(?!.*\.\.)[\w.\-/]{1,200}$/;
 const MARKDOWN = /\.(md|markdown|mdown|mkdn)$/i;
-// GitHub shows the first README it finds in .github/, then the root, then docs/.
-const PROBES = ['.github/', '', 'docs/'].flatMap(dir => ['README.md', 'readme.md', 'Readme.md'].map(name => dir + name));
 
 class Fail extends Error { constructor(code) { super(code); this.code = code; } }
 const ERRORS = {

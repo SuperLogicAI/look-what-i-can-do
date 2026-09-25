@@ -1,12 +1,15 @@
 {
   "name": "look-what-i-can-do",
-  "version": "0.2.0",
-  "private": true,
+  "version": "0.2.1",
   "description": "Your README, as an animated SVG hero. Replays the example output your README shows, or runs it live with real colors. GIF export too.",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/SuperLogicAI/look-what-i-can-do.git" },
   "type": "module",
   "bin": { "look-what-i-can-do": "lwicd.mjs", "lwicd": "lwicd.mjs" },
   "files": ["lwicd.mjs", "render.mjs", "serve.mjs"],
   "engines": { "node": ">=20" },
   "scripts": { "test": "node --test" },
-  "dependencies": { "playwright-core": "1.62.1" }
+  "peerDependencies": { "playwright-core": ">=1.49" },
+  "peerDependenciesMeta": { "playwright-core": { "optional": true } },
+  "devDependencies": { "playwright-core": "1.62.1" }
 }

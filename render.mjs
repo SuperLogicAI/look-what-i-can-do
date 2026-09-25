@@ -1,7 +1,9 @@
 // look-what-i-can-do renderer: README and terminal text in, animated SVG out. Pure JavaScript with no Node imports,
 // so the same code runs in the CLI (lwicd.mjs) and in the hosted Worker (serve.mjs). A test keeps it that way.
 
-export const VERSION = '0.2.0';
+export const VERSION = '0.2.1';
+// Where GitHub looks for the README it shows: .github/, then the root, then docs/.
+export const README_PATHS = ['.github/', '', 'docs/'].flatMap(dir => ['README.md', 'readme.md', 'Readme.md'].map(name => dir + name));
 
 // ---------- README ----------
 

@@ -3,3 +3,6 @@ node_modules/
 .wrangler/
 /look-what-i-can-do.svg
 /look-what-i-can-do.gif
+CLAUDE.md
+PROPOSAL.md
+.logic-loop/

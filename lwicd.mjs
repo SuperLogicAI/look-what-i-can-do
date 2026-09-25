@@ -3,14 +3,14 @@
 // Writes an animated SVG (the primary output) or, with --gif, a GIF export of the same SVG.
 // Replay (default) animates the command and example output the README already shows, and runs nothing from the repo.
 // --live runs the command in a pseudo-terminal and keeps its real output and colors.
-import { readFileSync, writeFileSync, mkdtempSync, rmSync, statSync, realpathSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, rmSync, statSync, existsSync, realpathSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createServer } from 'node:http';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
-import { VERSION, readReadme, fillHero, parseAnsi, trim, heroSvg, esc } from './render.mjs';
+import { VERSION, README_PATHS, readReadme, fillHero, parseAnsi, trim, heroSvg, esc } from './render.mjs';
 import { createHandler } from './serve.mjs';
 
 export * from './render.mjs'; // the renderer, for tests and anyone importing the CLI module
@@ -21,7 +21,10 @@ const FPS = 15;
 export async function renderGif({ svg, seconds, W, H }, out) {
     // ponytail: Chromium + ffmpeg for the export only; Phase 3 swaps in resvg-wasm and a JS GIF encoder (PROPOSAL §6)
     let chromium;
-    try { ({ chromium } = await import('playwright-core')); } catch { throw new Error('playwright-core is missing: run npm install'); }
+    // Optional, so `npx look-what-i-can-do` stays a 17 KB download for everyone who only wants SVG.
+    try { ({ chromium } = await import('playwright-core')); } catch {
+        throw new Error('GIF export needs playwright-core next to this tool: npx -p look-what-i-can-do -p playwright-core lwicd --gif (or npm install in the repo)');
+    }
     const browser = await chromium.launch().catch(() => chromium.launch({ channel: 'chrome' }))
         .catch(() => { throw new Error('no Chromium found: install Google Chrome, or run npx playwright-core install chromium-headless-shell'); });
     const dir = mkdtempSync(join(tmpdir(), 'lwicd-'));
@@ -55,8 +58,25 @@ export function runLive(command, cwd) {
     return { raw: r.stdout, status: r.status };
 }
 
-// Package runners fetch what they run, so they run outside the repo: inside a package's own repo, npx looks for its unbuilt local bin.
-const cwdFor = (command, readme) => /^(npx|bunx|uvx|pnpm dlx|yarn dlx|pipx run)\s/.test(command) ? tmpdir() : dirname(readme);
+/** Runs the README's command where a visitor would: the README's folder, so tools that work on the current folder show real
+ *  results. Inside a package's own repo, npx can fail to find that package's command (exit 127, as agent-nocap does); nothing
+ *  ran, so it tries once more from outside the repo. */
+function runHero(command, readme) {
+    let cwd = dirname(readme), r = runLive(command, cwd);
+    if (r.status === 127 && /^(npx|bunx|pnpm dlx|yarn dlx)\s/.test(command)) r = runLive(command, cwd = tmpdir());
+    console.error(`ran in a terminal: ${command}   (in ${cwd})`);
+    return r;
+}
+
+/** The README to use: a file you name, or the one GitHub would show for a folder (the current one by default). */
+function findReadme(target, fail) {
+    const path = resolve(target ?? '.');
+    if (!existsSync(path)) fail(`nothing at ${path}`);
+    if (!statSync(path).isDirectory()) return path;
+    const found = README_PATHS.map(p => join(path, p)).find(p => existsSync(p));
+    return found ?? fail(`no README in ${path} (looked in the folder, .github/ and docs/).
+Run it inside your repo, or point it at a README: npx look-what-i-can-do path/to/README.md`);
+}
 
 /** `capture`: run the ```console hero block's command in a terminal and write its real output into that block, colors dropped
  *  (README code blocks can't hold them). The agent-facing way to fill an example: output is copied, never typed. */
@@ -65,9 +85,7 @@ function capture(readme, fail) {
     try { md = readFileSync(readme, 'utf8'); } catch { fail(`no README at ${readme}`); }
     try { fillHero(md, []); } catch (e) { fail(e.message); } // check the block before running anything
     const { command } = readReadme(md);
-    const cwd = cwdFor(command, readme);
-    console.error(`running in a terminal: ${command}   (in ${cwd})`);
-    const { raw, status } = runLive(command, cwd);
+    const { raw, status } = runHero(command, readme);
     const lines = trim(parseAnsi(raw)).map(l => l.map(s => s.text).join(''));
     if (status !== 0) fail(`\`${command}\` exited ${status}; the README is unchanged. Its last lines:\n\n${lines.slice(-5).join('\n')}`);
     let next;
@@ -83,8 +101,8 @@ ${lines.join('\n')}`);
 
 const usage = `look-what-i-can-do ${VERSION}: your README, as an animated hero.
 
-Usage: look-what-i-can-do [README.md] [-o file.svg] [--gif] [--live] [--command <cmd>] [--highlight <text>]
-       look-what-i-can-do capture [README.md]    run the \`\`\`console hero block's command, write its real output into it
+Usage: look-what-i-can-do [README.md | folder] [-o file.svg] [--gif] [--live] [--command <cmd>] [--highlight <text>]
+       look-what-i-can-do capture [README.md | folder]    run the \`\`\`console hero block's command, write its real output into it
        look-what-i-can-do serve [--port 8787]    the hosted URL, locally: /<owner>/<repo>.svg
 
   -o, --out <file>      where to write it (default look-what-i-can-do.svg, or .gif with --gif)
@@ -107,11 +125,11 @@ async function main() {
     if (values.help) return console.log(usage);
     if (values.version) return console.log(VERSION);
     if (positionals[0] === 'serve') return serveLocally(Number(values.port ?? 8787));
-    if (positionals[0] === 'capture') return capture(resolve(positionals[1] ?? 'README.md'), fail);
+    if (positionals[0] === 'capture') return capture(findReadme(positionals[1], fail), fail);
     if (positionals.length > 1) fail(`one README at a time, got ${positionals.length}\n\n${usage}`);
 
     const gif = values.gif || /\.gif$/i.test(values.out ?? '');
-    const readme = resolve(positionals[0] ?? 'README.md'), out = resolve(values.out ?? `look-what-i-can-do.${gif ? 'gif' : 'svg'}`);
+    const readme = findReadme(positionals[0], fail), out = resolve(values.out ?? `look-what-i-can-do.${gif ? 'gif' : 'svg'}`);
     if (gif ? !/\.gif$/i.test(out) : !/\.svg$/i.test(out)) fail(`output must be .svg, or .gif with --gif; got ${basename(out)}`);
     let md;
     try { md = readFileSync(readme, 'utf8'); } catch { fail(`no README at ${readme}`); }
@@ -121,9 +139,7 @@ async function main() {
 
     let lines, source;
     if (values.live) {
-        const cwd = cwdFor(command, readme);
-        console.error(`running in a terminal: ${command}   (in ${cwd})`);
-        const { raw, status } = runLive(command, cwd);
+        const { raw, status } = runHero(command, readme);
         lines = trim(parseAnsi(raw));
         if (status !== 0) fail(`\`${command}\` exited ${status}, so there is nothing to show off. Its last lines:\n\n${
             lines.slice(-5).map(l => l.map(s => s.text).join('')).join('\n')}\n\nFix it, or pass --command "<cmd>"`);

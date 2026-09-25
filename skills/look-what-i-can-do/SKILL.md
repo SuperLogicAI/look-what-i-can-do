@@ -11,8 +11,8 @@ One rule sits under everything, and the tool calls it "no cap": the image never 
 
 ## Find the CLI
 
-- Once it's on npm: `npx look-what-i-can-do`.
-- Until then, it's `lwicd.mjs` in the repo this skill lives in, two levels above this skill's folder. Resolve symlinks first, because the skill may be linked into `~/.claude/skills`:
+- Usually: `npx look-what-i-can-do`, which is on npm.
+- If you're working on look-what-i-can-do itself, or can't reach npm, use `lwicd.mjs` in the repo this skill lives in, two levels above this skill's folder. Resolve symlinks first, because the skill may be linked into `~/.claude/skills`:
 
   ```sh
   LWICD="$(cd "$(dirname "$(realpath "<this skill's base directory>/SKILL.md")")/../.." && pwd)/lwicd.mjs"
