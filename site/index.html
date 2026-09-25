@@ -42,7 +42,8 @@ section { padding: 56px 0; }
 h2 { font-size: clamp(26px, 4vw, 36px); letter-spacing: -0.02em; margin: 0 0 8px; }
 .sub { color: var(--muted); margin: 0 0 28px; }
 
-.try { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: clamp(20px, 4vw, 36px); }
+/* Border drawn by a second background clipped to the border box: the same gradient as the headline */
+.try { background: linear-gradient(var(--panel), var(--panel)) padding-box, linear-gradient(90deg, var(--green), var(--blue) 45%, var(--purple) 75%, var(--pink)) border-box; border: 1.5px solid transparent; border-radius: 16px; padding: clamp(20px, 4vw, 36px); }
 form { display: flex; gap: 10px; flex-wrap: wrap; }
 .field { flex: 1 1 280px; display: flex; align-items: center; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; font: 16px var(--mono); }
 .field:focus-within { border-color: var(--blue); }
@@ -62,6 +63,9 @@ pre { flex: 1; margin: 0; overflow-x: auto; background: var(--bg); border: 1px s
 .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; counter-reset: step; }
 .step { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 24px; }
 .step::before { counter-increment: step; content: counter(step); display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; font: 700 15px var(--mono); color: var(--bg); margin-bottom: 14px; }
+.step:nth-child(1) { box-shadow: 0 20px 80px -18px rgba(126, 231, 135, 0.45); }
+.step:nth-child(2) { box-shadow: 0 20px 80px -18px rgba(121, 192, 255, 0.45); }
+.step:nth-child(3) { box-shadow: 0 20px 80px -18px rgba(210, 168, 255, 0.5); }
 .step:nth-child(1)::before { background: var(--green); }
 .step:nth-child(2)::before { background: var(--blue); }
 .step:nth-child(3)::before { background: var(--purple); }
