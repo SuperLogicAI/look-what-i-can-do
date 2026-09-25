@@ -10,7 +10,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { createServer } from 'node:http';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
-import { VERSION, readReadme, parseAnsi, trim, heroSvg, esc } from './render.mjs';
+import { VERSION, readReadme, fillHero, parseAnsi, trim, heroSvg, esc } from './render.mjs';
 import { createHandler } from './serve.mjs';
 
 export * from './render.mjs'; // the renderer, for tests and anyone importing the CLI module
@@ -55,11 +55,36 @@ export function runLive(command, cwd) {
     return { raw: r.stdout, status: r.status };
 }
 
+// Package runners fetch what they run, so they run outside the repo: inside a package's own repo, npx looks for its unbuilt local bin.
+const cwdFor = (command, readme) => /^(npx|bunx|uvx|pnpm dlx|yarn dlx|pipx run)\s/.test(command) ? tmpdir() : dirname(readme);
+
+/** `capture`: run the ```console hero block's command in a terminal and write its real output into that block, colors dropped
+ *  (README code blocks can't hold them). The agent-facing way to fill an example: output is copied, never typed. */
+function capture(readme, fail) {
+    let md;
+    try { md = readFileSync(readme, 'utf8'); } catch { fail(`no README at ${readme}`); }
+    try { fillHero(md, []); } catch (e) { fail(e.message); } // check the block before running anything
+    const { command } = readReadme(md);
+    const cwd = cwdFor(command, readme);
+    console.error(`running in a terminal: ${command}   (in ${cwd})`);
+    const { raw, status } = runLive(command, cwd);
+    const lines = trim(parseAnsi(raw)).map(l => l.map(s => s.text).join(''));
+    if (status !== 0) fail(`\`${command}\` exited ${status}; the README is unchanged. Its last lines:\n\n${lines.slice(-5).join('\n')}`);
+    let next;
+    try { next = fillHero(md, lines); } catch (e) { fail(e.message); }
+    writeFileSync(readme, next);
+    console.log(`🤸 captured ${lines.length} line${lines.length === 1 ? '' : 's'} from \`${command}\` into the \`\`\`console hero block of ${relative(process.cwd(), readme) || readme}.
+It's your real output: review it before you commit.
+
+${lines.join('\n')}`);
+}
+
 // ---------- CLI ----------
 
 const usage = `look-what-i-can-do ${VERSION}: your README, as an animated hero.
 
 Usage: look-what-i-can-do [README.md] [-o file.svg] [--gif] [--live] [--command <cmd>] [--highlight <text>]
+       look-what-i-can-do capture [README.md]    run the \`\`\`console hero block's command, write its real output into it
        look-what-i-can-do serve [--port 8787]    the hosted URL, locally: /<owner>/<repo>.svg
 
   -o, --out <file>      where to write it (default look-what-i-can-do.svg, or .gif with --gif)
@@ -82,6 +107,7 @@ async function main() {
     if (values.help) return console.log(usage);
     if (values.version) return console.log(VERSION);
     if (positionals[0] === 'serve') return serveLocally(Number(values.port ?? 8787));
+    if (positionals[0] === 'capture') return capture(resolve(positionals[1] ?? 'README.md'), fail);
     if (positionals.length > 1) fail(`one README at a time, got ${positionals.length}\n\n${usage}`);
 
     const gif = values.gif || /\.gif$/i.test(values.out ?? '');
@@ -95,8 +121,7 @@ async function main() {
 
     let lines, source;
     if (values.live) {
-        // Package runners fetch what they run, so they run outside the repo: inside a package's own repo, npx looks for its unbuilt local bin.
-        const cwd = /^(npx|bunx|uvx|pnpm dlx|yarn dlx|pipx run)\s/.test(command) ? tmpdir() : dirname(readme);
+        const cwd = cwdFor(command, readme);
         console.error(`running in a terminal: ${command}   (in ${cwd})`);
         const { raw, status } = runLive(command, cwd);
         lines = trim(parseAnsi(raw));

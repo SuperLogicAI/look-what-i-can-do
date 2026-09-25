@@ -31,6 +31,7 @@ Paste at the top of your README:
 node lwicd.mjs path/to/README.md           # animated SVG: needs Node and nothing else
 node lwicd.mjs path/to/README.md --live    # run the command in a terminal: real output, real colors
 node lwicd.mjs path/to/README.md --gif     # GIF export: npm install first; needs Chrome or Chromium, and ffmpeg
+node lwicd.mjs capture path/to/README.md   # fill the ```console hero block with its command's real output
 node lwicd.mjs serve                       # the hosted URL, locally: http://localhost:8787/<owner>/<repo>.svg
 npm test                                   # fixture tests, synthetic data only
 ```
@@ -51,7 +52,25 @@ Add `hero` after the language on the fence of the block you want: ```` ```consol
 <!-- look-what-i-can-do highlight="unbacked" -->
 ```
 
+To fill the block, `capture` runs its `$` command in a real terminal and writes what it printed into the block, colors dropped. That way the example is always a real run. If the command fails, the README stays as it was.
+
 Without a marker it guesses: the first `console` block with a `$ command` and output, else the first run command (`npx`, `npm`, `pip`, `brew`, `cargo`, `go`, `docker`, `node`, `python`, …) in a shell block with the first untagged or `text` block as its output. The CLI tells you which one it used. The title is the first `#` heading. The tagline is the first paragraph after it that isn't HTML, a badge or a table, cut to its first sentence past 100 characters.
+
+## Let an agent do it
+
+[`skills/look-what-i-can-do`](skills/look-what-i-can-do/SKILL.md) is a skill for Claude Code and other agents that read skills. Ask for a README hero and the agent does the rest:
+
+1. Picks the command and the headline line.
+2. Marks the block.
+3. Fills it with `capture`, never typing output itself.
+4. Shows you the real output before anything is committed.
+5. Renders the hero and hands back the embed.
+
+To install it for yourself, link it:
+
+```sh
+ln -s "$PWD/skills/look-what-i-can-do" ~/.claude/skills/look-what-i-can-do
+```
 
 ## Hosted URL: lookwhaticando.dev
 

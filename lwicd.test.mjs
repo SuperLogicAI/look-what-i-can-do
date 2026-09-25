@@ -6,7 +6,7 @@ import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { readReadme, parseAnsi, fit, trim, layout, heroSvg, hex, runLive } from './lwicd.mjs';
+import { readReadme, fillHero, parseAnsi, fit, trim, layout, heroSvg, hex, runLive } from './lwicd.mjs';
 
 const fence = '```';
 const L = s => s.split('\n').map(text => [{ text }]);
@@ -57,6 +57,16 @@ test('README: no heading falls back to the folder name; config blocks are not ou
     assert.equal(r.title, 'my-folder');
     assert.deepEqual(r.output, []);
     assert.equal(r.command, '');
+});
+
+test('fillHero: replaces only the marked block\'s output, up to the next prompt; refuses when it can\'t do that safely', () => {
+    const md = ['# t', '', `${fence}console`, '$ npx t --help', 'untouched', fence, '', `${fence}console hero`, '$ npx t', 'old 1', 'old 2',
+        '$ npx t --version', '1.0.0', fence, '', 'after'].join('\n');
+    assert.equal(fillHero(md, ['new']), md.replace('old 1\nold 2', 'new'));
+    assert.equal(readReadme(fillHero(md, ['a', '', 'b'])).output.join('|'), 'a||b');
+    assert.throws(() => fillHero('# t\n\nno blocks', ['x']), /no block fenced ```console hero/);
+    assert.throws(() => fillHero(`${fence}console hero\nno prompt\n${fence}`, ['x']), /needs a "\$ command" line/);
+    assert.throws(() => fillHero(`${fence}console hero\n$ npx t\n${fence}`, ['```js']), /would end the code block/);
 });
 
 test('ANSI: 16, 256 and 24-bit colors, dim, OSC links, carriage returns and the script ^D echo', () => {
@@ -164,6 +174,22 @@ test('cli: writes an SVG with no browser and prints the snippet; refuses other f
 });
 
 const hasScript = spawnSync('script', ['-h']).error?.code !== 'ENOENT';
+test('capture: writes the command\'s real output into the marked block, colors dropped; a failing command changes nothing', { skip: !hasScript && 'no script command' }, () => {
+    const dir = mkdtempSync(join(tmpdir(), 'lwicd-capture-'));
+    const readme = join(dir, 'README.md');
+    const md = ['# demo', '', `${fence}console hero`, `$ node -e "console.log('\\x1b[32m3 fixed\\x1b[0m'); console.log('done')"`, 'placeholder', fence, '', 'tail'].join('\n');
+    writeFileSync(readme, md);
+    const r = spawnSync(process.execPath, [cli, 'capture'], { cwd: dir, encoding: 'utf8' });
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(readFileSync(readme, 'utf8'), md.replace('placeholder', '3 fixed\ndone'));
+    const failing = md.replace(/\$ node -e .*/, '$ node -e "process.exit(3)"');
+    writeFileSync(readme, failing);
+    const bad = spawnSync(process.execPath, [cli, 'capture'], { cwd: dir, encoding: 'utf8' });
+    assert.equal(bad.status, 2);
+    assert.match(bad.stderr, /exited 3; the README is unchanged/);
+    assert.equal(readFileSync(readme, 'utf8'), failing);
+});
+
 test('live: a pseudo-terminal keeps colors a tool only prints to a TTY', { skip: !hasScript && 'no script command' }, () => {
     const { raw } = runLive(`node -e "console.log(process.stdout.isTTY ? '\\x1b[31mtty\\x1b[0m' : 'pipe')"`, process.cwd());
     assert.deepEqual(trim(parseAnsi(raw)), [[{ text: 'tty', fg: 1 }]]);

@@ -44,6 +44,22 @@ export function readReadme(md, fallbackTitle = '') {
     return { title, tagline, command: (command ?? '').replace(/\s+#.*$/, '').trim(), output, marked: !!marked, options };
 }
 
+/** The README with the ```console hero block's output replaced by `output` (lines of plain text). Throws, changing nothing,
+ *  when there's no marked block with a "$ command" line, or when a line would close the code block early. */
+export function fillHero(md, output) {
+    for (const m of md.matchAll(/^```([^\n]*)\n([\s\S]*?)^```/gm)) {
+        if (!m[1].trim().toLowerCase().split(/\s+/).slice(1).includes('hero')) continue;
+        const lines = m[2].replace(/\n$/, '').split('\n'), i = lines.findIndex(l => l.startsWith('$ '));
+        if (i < 0) throw new Error('the ```console hero block needs a "$ command" line to capture');
+        if (output.some(l => l.startsWith('```'))) throw new Error('the output has a line starting with ```, which would end the code block');
+        const next = lines.findIndex((l, j) => j > i && l.startsWith('$ '));
+        const body = [...lines.slice(0, i + 1), ...output, ...(next < 0 ? [] : lines.slice(next))].join('\n') + '\n';
+        const start = m.index + 4 + m[1].length; // just past the opening fence line
+        return md.slice(0, start) + body + md.slice(start + m[2].length);
+    }
+    throw new Error('no block fenced ```console hero: add one with a "$ command" line, then capture');
+}
+
 // ---------- terminal output ----------
 // A line is a list of segments { text, fg, bg, bold, dim, italic, underline }. fg/bg: 0-255 palette index or '#rrggbb'.
 

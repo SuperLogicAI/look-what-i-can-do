@@ -6,10 +6,11 @@
 
 - `npm test`: `lwicd.test.mjs` (CLI and renderer) and `serve.test.mjs` (hosted URL against a fake GitHub). `node:test`, synthetic data only, no network. Run before claiming done. No linter configured.
 - `node lwicd.mjs [README.md] [-o file.svg] [--gif] [--live] [--command <cmd>] [--highlight <text>]`
+- `node lwicd.mjs capture [README.md]`: runs the ```` ```console hero ```` block's `$` command in a pseudo-terminal and writes its real output (colors dropped) into that block. A failed run leaves the README untouched.
 - `node lwicd.mjs serve [--port 8787]`: the hosted URL in plain Node. `npx wrangler dev`: the same in the Workers runtime. Both talk to real GitHub, with a 60/hour API limit without `GITHUB_TOKEN`.
 - `npx wrangler deploy`: deploys the Worker to lookwhaticando.dev (`wrangler.jsonc`). It is production: ask first. `npx wrangler tail look-what-i-can-do --format json`: the live request log (useful for checking what GitHub's camo actually sends).
 - The SVG path needs only Node. `--gif` needs Chromium (playwright-core's headless shell, or Google Chrome) and `ffmpeg` on PATH.
-- Re-render this repo's hero after README changes: `node lwicd.mjs -o docs/hero.svg`. Paste its real output into the README's ```` ```console hero ```` block first, then render again, so the hero replays a real run.
+- Re-render this repo's hero after README changes: `node lwicd.mjs capture`, which fills the README's ```` ```console hero ```` block with a real run, then `node lwicd.mjs -o docs/hero.svg`.
 
 ## Rules
 
@@ -29,3 +30,4 @@
 - On hold (founder said wait): the private GitHub test repo for Safari, Firefox, GitHub mobile and npmjs.com.
 - Hosting: Cloudflare Workers on lookwhaticando.dev, live since 2026-09-24 (the founder bought the domain that day; its DNS is on Cloudflare). Chosen over Vercel because Hobby is non-commercial and caps usage, and Workers is about 10× cheaper at scale (PROPOSAL §4). Move to Workers Paid ($5/mo) before launch: Free fails requests past 100k a day, and a failed request is a broken image.
 - Repo: github.com/SuperLogicAI/look-what-i-can-do (private for now). Not built: the GitHub Action.
+- Skill: `skills/look-what-i-can-do/SKILL.md`. An agent picks the story, marks the block, fills it with `capture`, renders and hands back. Walked through end to end on a synthetic README, but not formally evaluated yet: run `claude plugin eval` or the skill-creator loop before anyone else relies on it. Installing it into `~/.claude/skills` changes the founder's global setup: ask first. Rule for edits: output only enters a README through `capture` or the user pasting a real run, never typed.

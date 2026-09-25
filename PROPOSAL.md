@@ -3,7 +3,7 @@
 > 🤸 **Your README, as an animated hero. Zero setup from a URL.**
 > Paste one `<img>` line and your README's own command and output play at the top of it: an animated SVG of a few KB, in full color, that re-renders when the README changes. The CLI does the same on your machine, adds `--live` for real terminal colors, and exports a GIF for X and LinkedIn.
 
-Status: proposal v2, 2026-09-24, Super Logic AI. It was rewritten after two rounds of external review by a developer who built a profile-README generator. **Built:** the CLI, with animated SVG as the primary output, GIF export, and replay and live modes (`lwicd.mjs`); the ```` ```console hero ```` marker and options comment (§3.3); and the hosted URL handler (`serve.mjs`, §3.4), tested locally against real GitHub. See the [README](README.md). **Not built:** the GitHub Action. **Live since 2026-09-24:** https://lookwhaticando.dev, served by a Cloudflare Worker. Measurements come from the founder's machine and from live requests to GitHub on 2026-09-24.
+Status: proposal v2, 2026-09-24, Super Logic AI. It was rewritten after two rounds of external review by a developer who built a profile-README generator. **Built:** the CLI, with animated SVG as the primary output, GIF export, and replay and live modes (`lwicd.mjs`); the ```` ```console hero ```` marker and options comment (§3.3); the hosted URL handler (`serve.mjs`, §3.4); and `capture` plus the `/look-what-i-can-do` agent skill (§3.5). See the [README](README.md). **Not built:** the GitHub Action. **Live since 2026-09-24:** https://lookwhaticando.dev, served by a Cloudflare Worker. Measurements come from the founder's machine and from live requests to GitHub on 2026-09-24.
 
 **North star (a target, not a claim):** the default way a repo gets its hero image. "Made with look-what-i-can-do" appears in more READMEs every week, and every one of those images shows output the tool can really produce.
 
@@ -106,7 +106,8 @@ Known gap, stated rather than hidden: terminal background colors are dropped, be
 
 ### 3.5 Later
 
-- **`capture`:** `lwicd capture` commits a small asciicast of a real run, and the URL renders it. That gives full-color heroes without running anything on our servers.
+- **`capture` (built for README text):** `lwicd capture` runs the marked block's command in a real terminal and writes its output into the block. Output enters a README without anyone typing it. Still later: capturing a small asciicast next to the README, so the URL can render full color without running anything on our servers.
+- **Agent skill (built, for the founder's own use):** `skills/look-what-i-can-do/SKILL.md`. The agent picks the command and headline, marks the block, fills it with `capture`, shows the user the real output before anything is committed, renders, and hands back the embed (the hosted URL for public repos, a committed SVG for private ones). Walked through end to end on a synthetic README. It needs a formal eval before anyone else relies on it: that it never fabricates output and picks sensible headlines.
 - **`--check` in CI:** runs the command live and fails when the output drifts from the README's example.
 - **Also:** a light-theme variant via `<picture>`, and a 1280×640 social-preview PNG.
 
@@ -157,7 +158,7 @@ Known gap, stated rather than hidden: terminal background colors are dropped, be
 |---|---|---|---|
 | **0: GIF CLI** | done 2026-09-24 | Replay, `--live`, fit, highlight, snippet | Superseded by Phase 1 |
 | **1: SVG writer** | done 2026-09-24 | SVG primary; `--gif` exports the same SVG; 13 tests | ✅ SVG ≤ 50 KB (7.9 KB for nocap) ✅ animates in `<img>` in Chromium ⏳ checked on a private test repo: github.com in Safari, Firefox and Chrome, the GitHub mobile app, npmjs.com |
-| **2: URL, marker, launch** | 2–3 wk | ✅ Marker and options comment. ✅ URL handler per §3.4 with error SVGs. ✅ Worker live on lookwhaticando.dev. ⏳ The Action, npm publish, a public repo | README edits show up within 7 min (the measured worst case); zero broken images across every error case (✅ in tests); p95 under 300 ms on a cache hit (1 ms locally) and under 1.5 s on a miss (1.1 s cold locally); ≥ 25 public repos embed it within 30 days |
+| **2: URL, marker, launch** | 2–3 wk | ✅ Marker and options comment. ✅ URL handler per §3.4 with error SVGs. ✅ Worker live on lookwhaticando.dev. ✅ `capture` and the agent skill. ⏳ Skill eval, the Action, npm publish, a public repo | README edits show up within 7 min (the measured worst case); zero broken images across every error case (✅ in tests); p95 under 300 ms on a cache hit (1 ms locally) and under 1.5 s on a miss (1.1 s cold locally); ≥ 25 public repos embed it within 30 days |
 | **3: Pure-JS GIF + faster freshness** | later | resvg-wasm and a JS GIF encoder (drops Chromium and ffmpeg); commit-SHA pinning (~1 min); `capture` | GIF export works with no browser; identical bytes on macOS and Linux |
 | **4: GitHub App** | only if asked | Instant updates via push webhooks | Demand from Phase 2 users |
 
