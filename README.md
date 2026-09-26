@@ -6,7 +6,7 @@
 
 **Your README, as an animated hero. One command.**
 
-It reads your README's title, tagline, run command and example output, types the command, plays the output, and writes an animated SVG you paste at the top: a few KB, full color, sharp at any size. `--gif` exports the same hero as a GIF for places that don't take SVG, like X, LinkedIn and Product Hunt. The image above is this README, served live from GitHub by the [hosted URL](#hosted-url-lookwhaticandodev) with nothing committed. The command below makes the same image locally.
+It reads your README's title, tagline, run command and example output, types the command, plays the output, and writes an animated SVG you commit and show at the top: a few KB, full color, sharp at any size. `--gif` exports the same hero as a GIF for places that don't take SVG, like X, LinkedIn and Product Hunt. The image above is this README, served live from GitHub by the [hosted URL](#hosted-url-lookwhaticandodev) with nothing committed. The command below makes the same image locally.
 
 <!-- look-what-i-can-do highlight="rendered" -->
 ```console hero
@@ -96,7 +96,7 @@ The same agent-nocap hero is 7.9 KB as SVG and about 950 KB as GIF. SVG keeps fu
 The image never shows output your tool can't produce.
 
 - **Replay** (the default) shows your README's example output exactly as written. README code blocks carry no colors, so none are added. It runs nothing from your repo.
-- **Live** runs the command in a pseudo-terminal, so tools that only color a real terminal keep their colors. It refuses to render when the command fails. Package runners (`npx`, `bunx`, `uvx`) run outside your repo. Live output is your real output: review it before you publish.
+- **Live** runs the command in a pseudo-terminal, so tools that only color a real terminal keep their colors. It refuses to render when the command fails. It runs in your README's folder; when `npx`, `bunx`, `pnpm dlx` or `yarn dlx` can't find the command there (exit 127, common inside a package's own repo), it tries once more from outside the repo. Live output is your real output: review it before you publish.
 - Too tall for the frame: whole blocks from the top plus the last block (footers, links) stay, and the cut is marked `⋮`. Too wide: the font shrinks, then the line is cut and marked `…`.
 - The accent color touches the prompt and the highlight, never your output.
 

@@ -59,6 +59,15 @@ test('README: no heading falls back to the folder name; config blocks are not ou
     assert.equal(r.command, '');
 });
 
+test('README: a # inside quotes is part of the command; an empty "# " heading is no title and no crash', () => {
+    const md = cmd => ['# ', '', '# real', '', 'Tagline.', '', `${fence}console`, `$ ${cmd}`, 'ok', fence].join('\n');
+    assert.equal(readReadme(md(`echo 'hello # world' "a # b"  # say it`)).command, `echo 'hello # world' "a # b"`);
+    assert.equal(readReadme(md('gh issue view 12#x')).command, 'gh issue view 12#x');
+    assert.equal(readReadme(md('npx t')).title, 'real');
+    assert.equal(readReadme(md('npx t')).tagline, 'Tagline.');
+    assert.equal(readReadme('# \n').title, '');
+});
+
 test('fillHero: replaces only the marked block\'s output, up to the next prompt; refuses when it can\'t do that safely', () => {
     const md = ['# t', '', `${fence}console`, '$ npx t --help', 'untouched', fence, '', `${fence}console hero`, '$ npx t', 'old 1', 'old 2',
         '$ npx t --version', '1.0.0', fence, '', 'after'].join('\n');
@@ -67,6 +76,8 @@ test('fillHero: replaces only the marked block\'s output, up to the next prompt;
     assert.throws(() => fillHero('# t\n\nno blocks', ['x']), /no block fenced ```console hero/);
     assert.throws(() => fillHero(`${fence}console hero\nno prompt\n${fence}`, ['x']), /needs a "\$ command" line/);
     assert.throws(() => fillHero(`${fence}console hero\n$ npx t\n${fence}`, ['```js']), /would end the code block/);
+    assert.throws(() => fillHero(`${fence}console hero\n$ npx t\n${fence}`, ['ok', '   ```']), /would end the code block/); // CommonMark: up to 3 spaces
+    assert.match(fillHero(`${fence}console hero\n$ npx t\n${fence}`, ['    ```']), /\n {4}```\n```$/); // 4 spaces is content
 });
 
 test('ANSI: 16, 256 and 24-bit colors, dim, OSC links, carriage returns and the script ^D echo', () => {
@@ -133,6 +144,15 @@ test('svg: escapes README text, expands tabs, keeps every element on one loop, g
 test('svg: a line too wide even at the smallest font is cut with …, not run off the frame', () => {
     const row = rows(heroSvg({ title: 't', tagline: '', command: 'npx t', lines: L('y'.repeat(300)) }).svg)[0];
     assert.match(row, />y{164}…</); // 11px font: 1090px / 6.6px = 165 columns, the last one for …
+});
+
+test('svg: a command too wide for the frame is cut with …; title and tagline are capped, so the SVG stays small', () => {
+    const { svg } = heroSvg({ title: 'T'.repeat(5000), tagline: 'g'.repeat(5000), command: `npx t ${'y'.repeat(20000)}`, lines: L('ok') });
+    assert.ok(svg.length < 60_000, `${svg.length} bytes`);
+    assert.match(svg, />…<\/tspan>/);
+    assert.equal((svg.match(/<tspan class="a" style="animation-name:k\d+">[^<]/g) ?? []).length, 161, '163 columns with the …, less the 2 spaces');
+    assert.doesNotMatch(svg, /T{200}/);
+    assert.match(svg, /T{199}…/);
 });
 
 test('svg: the same README and renderer version always give the same bytes', () => {

@@ -1,7 +1,7 @@
 // look-what-i-can-do renderer: README and terminal text in, animated SVG out. Pure JavaScript with no Node imports,
 // so the same code runs in the CLI (lwicd.mjs) and in the hosted Worker (serve.mjs). A test keeps it that way.
 
-export const VERSION = '0.2.2';
+export const VERSION = '0.2.3';
 // Where GitHub looks for the README it shows: .github/, then the root, then docs/.
 export const README_PATHS = ['.github/', '', 'docs/'].flatMap(dir => ['README.md', 'readme.md', 'Readme.md'].map(name => dir + name));
 
@@ -27,8 +27,8 @@ export function readReadme(md, fallbackTitle = '') {
         return { lang, hero: flags.includes('hero'), lines: m[2].replace(/\n$/, '').split('\n') };
     });
     const prose = md.replace(/^```[\s\S]*?^```/gm, '');
-    const at = prose.search(/^#\s/m);
-    const title = at >= 0 ? plain(prose.slice(at).match(/^#\s+(.+)$/m)[1]) : fallbackTitle;
+    const h1 = prose.match(/^#[ \t]+(\S.*)$/m), at = h1 ? h1.index : -1; // an empty "# " is no title
+    const title = h1 ? plain(h1[1]) : fallbackTitle;
     const para = plain((at >= 0 ? prose.slice(at).split('\n').slice(1).join('\n') : prose).split(/\n\s*\n/)
         .map(p => p.trim()).find(p => p && !/^(<|#|\||!\[|\[!\[)/.test(p)) ?? '');
     const tagline = para.length > 100 ? para.match(/^.{20,100}?[.!?](?=\s|$)/)?.[0] ?? para : para; // one line: first sentence(s)
@@ -43,8 +43,18 @@ export function readReadme(md, fallbackTitle = '') {
     // a README that documents the comment in an example must not configure itself with it.
     const options = {};
     for (const [, k, v] of (prose.match(/<!--\s*look-what-i-can-do\b([\s\S]*?)-->/)?.[1] ?? '').matchAll(/(\w+)="([^"]*)"/g)) if (k === 'highlight') options.highlight = v;
-    return { title, tagline, command: (command ?? '').replace(/\s+#.*$/, '').trim(), output, marked: !!marked, options };
+    return { title, tagline, command: uncomment(command ?? '').trim(), output, marked: !!marked, options };
 }
+
+/** The command without a trailing shell comment: a # after whitespace, outside quotes. */
+// ponytail: no backslash escapes inside quotes; a command that needs them keeps a stray # comment at worst
+const uncomment = s => {
+    for (let i = 0, q = ''; i < s.length; i++) {
+        if (q) { if (s[i] === q) q = ''; } else if (s[i] === "'" || s[i] === '"') q = s[i];
+        else if (s[i] === '#' && /\s/.test(s[i - 1] ?? '')) return s.slice(0, i);
+    }
+    return s;
+};
 
 /** The README with the ```console hero block's output replaced by `output` (lines of plain text). Throws, changing nothing,
  *  when there's no marked block with a "$ command" line, or when a line would close the code block early. */
@@ -53,7 +63,7 @@ export function fillHero(md, output) {
         if (!m[1].trim().toLowerCase().split(/\s+/).slice(1).includes('hero')) continue;
         const lines = m[2].replace(/\n$/, '').split('\n'), i = lines.findIndex(l => l.startsWith('$ '));
         if (i < 0) throw new Error('the ```console hero block needs a "$ command" line to capture');
-        if (output.some(l => l.startsWith('```'))) throw new Error('the output has a line starting with ```, which would end the code block');
+        if (output.some(l => /^ {0,3}```/.test(l))) throw new Error('the output has a line starting with ``` (up to three spaces in), which would end the code block');
         const next = lines.findIndex((l, j) => j > i && l.startsWith('$ '));
         const body = [...lines.slice(0, i + 1), ...output, ...(next < 0 ? [] : lines.slice(next))].join('\n') + '\n';
         const start = m.index + 4 + m[1].length; // just past the opening fence line
@@ -170,6 +180,7 @@ const expandTabs = line => {
     });
 };
 
+const MAX_COMMAND = Math.floor(1090 / (0.6 * 11)) - 2; // columns at font 11, less the "$ " prompt
 // Wider than the frame even at the smallest font: cut the line and mark the cut with …
 const clip = (line, max) => {
     let n = 0;
@@ -192,6 +203,9 @@ export function tspan(s) {
 
 /** The animated SVG and one loop's length. The accent colors the prompt and the optional highlight, never the output. */
 export function heroSvg({ title, tagline, command, lines, highlight, accent = accentFor(title) }) {
+    // Wider than the frame at the smallest font: cut and marked like output lines. Title and tagline get a generous cap on size.
+    [command, title, tagline] = [[command, MAX_COMMAND], [title, 200], [tagline, 200]]
+        .map(([s, max]) => s && clip([{ text: s }], max)[0].text);
     const { font, lineH, shown, H } = layout(lines, command);
     const typeAt = 1.2, perChar = Math.min(0.055, 1.2 / Math.max(command.length, 1));
     const typed = typeAt + command.length * perChar, enter = typed + 0.5, perLine = Math.min(0.1, 1.6 / Math.max(shown.length, 1));

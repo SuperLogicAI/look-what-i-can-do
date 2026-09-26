@@ -1,6 +1,6 @@
 {
   "name": "look-what-i-can-do",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Your README, as an animated SVG hero. Replays the example output your README shows, or runs it live with real colors. GIF export too.",
   "license": "MIT",
   "repository": { "type": "git", "url": "git+https://github.com/SuperLogicAI/look-what-i-can-do.git" },

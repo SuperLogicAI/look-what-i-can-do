@@ -5,7 +5,7 @@
 import { readReadme, heroSvg, trim, README_PATHS as PROBES, VERSION } from './render.mjs';
 
 const RAW = 'https://raw.githubusercontent.com', API = 'https://api.github.com';
-const CHECK_MS = 60_000, PATH_MS = 24 * 3600_000, MAX_BYTES = 500 * 1024, TIMEOUT_MS = 2500;
+const CHECK_MS = 60_000, PATH_MS = 24 * 3600_000, MISS_MS = 10 * 60_000, MAX_BYTES = 500 * 1024, TIMEOUT_MS = 2500;
 // Per instance: at most 500 repos, each keeping up to 200 output lines of up to 500 characters, well inside a Worker's 128 MB.
 const MAX_REPOS = 500, MAX_LINES = 200, MAX_LINE = 500;
 const OWNER = /^[A-Za-z0-9][A-Za-z0-9-]{0,38}$/, REPO = /^(?!\.\.?$)[\w.-]{1,100}$/, SAFE = /^(?!\/)(?!.*\.\.)[\w.\-/]{1,200}$/;
@@ -78,15 +78,18 @@ export function createHandler({ fetch = globalThis.fetch, token = globalThis.pro
     }
 
     async function refresh(e, owner, repo, ref, pathParam) {
-        if (!pathParam && (e.path === undefined || now() - e.pathAt > PATH_MS)) { e.path = await locate(owner, repo, ref); e.pathAt = now(); }
+        // No README yet: look again after 10 minutes, not a day. Not every minute: without a token the API allows 60 an hour.
+        if (!pathParam && (e.path === undefined || now() - e.pathAt > (e.path ? PATH_MS : MISS_MS))) { e.path = await locate(owner, repo, ref); e.pathAt = now(); }
         const path = pathParam ?? e.path;
         if (!path) throw new Fail('not-found');
         if (!MARKDOWN.test(path)) throw new Fail('not-markdown');
-        const r = await get(rawUrl(owner, repo, ref, path), e.etag ? { 'if-none-match': e.etag } : {});
+        // Only revalidate what we still hold: a 304 for a README we dropped (private, then public again) would leave nothing to serve.
+        const r = await get(rawUrl(owner, repo, ref, path), e.etag && e.readme ? { 'if-none-match': e.etag } : {});
         if (r.status === 304) return; // raw's ETag follows the README's content, so unrelated commits land here
         if (!r.ok) {
             await r.body?.cancel();
             if (r.status !== 404) throw new Fail('upstream');
+            Object.assign(e, { readme: null, render: null, etag: null }); // gone from here: never serve it again, even if the lookup below fails
             if (!pathParam && !e.relocated) { e.path = undefined; e.relocated = true; return refresh(e, owner, repo, ref, pathParam); } // moved? look again once
             throw new Fail('not-found');
         }

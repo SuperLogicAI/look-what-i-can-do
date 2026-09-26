@@ -109,6 +109,30 @@ test('private stays private: a README only a token can see is not served, and a 
     assert.doesNotMatch(await gone.text(), /all 9 checks passed/);
 });
 
+test('a README that 404s is dropped at once, even when the lookup that follows fails', async () => {
+    const files = { 'acme/tool/README.md': readme() }, gh = fakeGitHub(files), c = clock();
+    let broken = false; // the raw fetch still answers 404; the API and the HEAD probes fail
+    const handle = createHandler({ now: c.now, fetch: (u, i) => broken && (u.includes('api.github.com') || i?.method === 'HEAD')
+        ? Promise.reject(new Error('timeout')) : gh.fetch(u, i) });
+    assert.equal((await handle(req('/acme/tool.svg'))).status, 200);
+    delete files['acme/tool/README.md']; broken = true; c.t += 61_000;
+    const r = await handle(req('/acme/tool.svg'));
+    assert.equal(r.headers.get('x-lwicd-error'), 'upstream');
+    assert.doesNotMatch(await r.text(), /all 9 checks passed/);
+});
+
+test('a README that comes back is served within ten minutes, the same bytes included (private, then public again)', async () => {
+    const files = { 'acme/tool/README.md': readme() }, c = clock();
+    const handle = createHandler({ fetch: fakeGitHub(files).fetch, now: c.now });
+    assert.equal((await handle(req('/acme/tool.svg'))).status, 200);
+    delete files['acme/tool/README.md']; c.t += 61_000;
+    assert.equal((await handle(req('/acme/tool.svg'))).headers.get('x-lwicd-error'), 'not-found');
+    files['acme/tool/README.md'] = readme(); c.t += 10 * 60_000 + 1;
+    const back = await handle(req('/acme/tool.svg'));
+    assert.equal(back.headers.get('x-lwicd-error'), null);
+    assert.match(await back.text(), />all 9 checks passed</);
+});
+
 test('when GitHub fails after a good render, serves that render marked stale', async () => {
     const gh = fakeGitHub({ 'acme/tool/README.md': readme() }), c = clock();
     let broken = false;
