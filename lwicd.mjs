@@ -167,7 +167,7 @@ async function main() {
   ${source}
   rendered  ${show(out)} · ${hero.W}×${hero.H} · ${hero.seconds.toFixed(1)} s loop · ${kb < 100 ? kb.toFixed(1) : Math.round(kb)} KB · in ${((Date.now() - t0) / 1000).toFixed(1)} s
 
-Paste at the top of your README:
+Commit ${src}, then paste at the top of your README:
 
 <p align="center">
   <img src="${esc(src)}" width="800" alt="${esc(alt)}">

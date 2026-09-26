@@ -158,6 +158,7 @@ test('cli: writes an SVG with no browser and prints the snippet; refuses other f
     const svg = readFileSync(join(dir, 'hero.svg'), 'utf8');
     assert.ok(svg.startsWith('<svg xmlns="http://www.w3.org/2000/svg"'));
     assert.match(svg, />done in 1 s</);
+    assert.match(r.stdout, /Commit hero\.svg, then paste at the top of your README:/);
     assert.match(r.stdout, /<img src="hero\.svg" width="800" alt="demo: Does a thing\.">/);
     assert.match(r.stdout, /block {5}guessed\. Mark yours with ```console hero/);
     writeFileSync(join(dir, 'MARKED.md'), ['# demo', '', '<!-- look-what-i-can-do highlight="done" -->', `${fence}console hero`, '$ npx demo', 'done in 1 s', fence].join('\n'));

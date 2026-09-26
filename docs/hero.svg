@@ -67,7 +67,7 @@ text{font:15.5px ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberatio
 <text x="95" y="349.3" class="a o" style="animation-name:k37">  replayed  12 lines of example output, as written (READMEs have no colors; --live runs it)</text>
 <rect x="87" y="355.5" width="1106" height="23.25" rx="4" fill="#56d4dd" fill-opacity=".22" class="a g" style="animation-name:k38"/><text x="95" y="372.6" class="a o" style="animation-name:k39">  rendered  docs/hero.svg · 1280×640 · 8.5 s loop · 7.6 KB · in 0.0 s</text>
 <text x="95" y="395.8" class="a o" style="animation-name:k40"></text>
-<text x="95" y="419.1" class="a o" style="animation-name:k41">Paste at the top of your README:</text>
+<text x="95" y="419.1" class="a o" style="animation-name:k41">Commit docs/hero.svg, then paste at the top of your README:</text>
 <text x="95" y="442.3" class="a o" style="animation-name:k42"></text>
 <text x="95" y="465.6" class="a o" style="animation-name:k43">&lt;p align=&quot;center&quot;&gt;</text>
 <text x="95" y="488.8" class="a o" style="animation-name:k44">  &lt;img src=&quot;docs/hero.svg&quot; width=&quot;800&quot; alt=&quot;look-what-i-can-do 🤸: Your README, as an animated hero. One command.&quot;&gt;</text>

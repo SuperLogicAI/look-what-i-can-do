@@ -18,7 +18,7 @@ $ node lwicd.mjs -o docs/hero.svg
   replayed  12 lines of example output, as written (READMEs have no colors; --live runs it)
   rendered  docs/hero.svg · 1280×640 · 8.5 s loop · 7.6 KB · in 0.0 s
 
-Paste at the top of your README:
+Commit docs/hero.svg, then paste at the top of your README:
 
 <p align="center">
   <img src="docs/hero.svg" width="800" alt="look-what-i-can-do 🤸: Your README, as an animated hero. One command.">
